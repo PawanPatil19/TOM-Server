@@ -8,11 +8,11 @@ dependencies:
   - python=3.9
   - pip
   - pip:
-      - numpy
-      - pandas
-      - opencv-python
-      - ffmpeg
-      - ffmpeg-python
-      - python-vlc
-      - cherrypy
-      - pynput
+      - numpy==1.24.*
+      - pandas==1.5.*
+      - opencv-python==4.7.*
+      - ffmpeg==1.4.*
+      - ffmpeg-python==0.2.*
+      - python-vlc==3.0.*
+      - cherrypy==18.8.*
+      - pynput==1.7.*
