@@ -1,5 +1,5 @@
-# RepositoryName
-Description of the repository
+# TOM-Server-Python
+A server for TOM
 
 ## Publications
 - [publication_name](publication_link), VENUE'XX
@@ -19,14 +19,21 @@ Description of the repository
 
 
 ## Requirements
-- 
+- make sure `pyhton3` is installed
 
 
 ## Installation
-- 
+- install `conda` (e.g., [Anaconda](https://docs.anaconda.com/anaconda/install/)/[Miniconda](https://docs.conda.io/en/latest/miniconda.html))
+- create new conda environment `tom` using `conda env create -f environment.yml`
+- activate `tom` environment, `conda activate tom`
+
+
+## Application execution 
+- run `main.py` (e.g., `python main.py`)
 
 
 ## References
+- [Structuring Your Project](https://docs.python-guide.org/writing/structure/)
 - 
 
 

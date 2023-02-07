@@ -1,0 +1,18 @@
+﻿name: tom
+channels:
+  - defaults
+  - menpo
+  - conda-forge
+  - postelrich
+dependencies:
+  - python=3.9
+  - pip
+  - pip:
+      - numpy
+      - pandas
+      - opencv-python
+      - ffmpeg
+      - ffmpeg-python
+      - python-vlc
+      - cherrypy
+      - pynput
