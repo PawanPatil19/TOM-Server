@@ -30,11 +30,16 @@ A server for TOM
 
 ## Application execution 
 - run `main.py` (e.g., `python main.py`)
+- for tests, run `pytest`
 
 
 ## References
 - [Structuring Your Project](https://docs.python-guide.org/writing/structure/)
-- 
+- [Modules](https://docs.python.org/3/tutorial/modules.html#packages)
+- [python-testing](https://realpython.com/python-testing/)
 
+
+## Third-party libraries
+- [python-fitbit](https://github.com/orcasgit/python-fitbit)
 
 
