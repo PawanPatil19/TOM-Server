@@ -18,3 +18,4 @@ dependencies:
       - pynput==1.7.*
       - pytest==7.1.*
       - git+https://github.com/orcasgit/python-fitbit.git
+      - websockets==10.4.*

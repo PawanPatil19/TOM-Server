@@ -26,6 +26,13 @@ A server for TOM
 - install `conda` (e.g., [Anaconda](https://docs.anaconda.com/anaconda/install/)/[Miniconda](https://docs.conda.io/en/latest/miniconda.html))
 - create new conda environment `tom` using `conda env create -f environment.yml`
 - activate `tom` environment, `conda activate tom`
+- create a file `fitbit_credential.json` with Fitbit credentials (Note: json format must be correct)
+-- ```json
+      {
+      "client_id": "XXXXX",
+      "client_secret": "YYYYYYYYYYYY"
+      }
+      ```
 
 
 ## Application execution 
