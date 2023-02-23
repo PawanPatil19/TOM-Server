@@ -34,17 +34,19 @@ def start_app():
     current_millis = 0
 
     while flag_is_running:
-        if time_utility.get_current_millis() - current_millis > 10*1000:
+        if time_utility.get_current_millis() - current_millis > 20*1000:
 
             fitbit_raw_data_heart_rate = fitbit_web_api.get_json_data(fitbit_client, today_string, fitbit_web_api.DATA_TYPE_HEART_RATE, fitbit_web_api.DETAIL_LEVEL_1SEC)
             # print(fitbit_raw_data_heart_rate)
             df = fitbit_web_api.get_data_frame(fitbit_raw_data_heart_rate, fitbit_web_api.DATA_TYPE_HEART_RATE)
             df_last_row = df.iloc[-1] # time, value
             last_row_val = df_last_row['value']
+            # last_row_val = 100
 
             socket_server.send_data(f'HR: {last_row_val}')
 
             # utilities.send_get_request(f'http://127.0.0.1:5050/?HR: {last_row_val}=1')
+            # curl -X POST -d "" http://127.0.0.1:5050/?Hello=1 
 
             current_millis = time_utility.get_current_millis()
 

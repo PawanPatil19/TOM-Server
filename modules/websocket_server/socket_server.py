@@ -13,7 +13,7 @@ CONNECTIONS = set()
 tx_queue = Queue()
 rx_queue = Queue()
 
-# references: https://websockets.readthedocs.io/en/stable/reference/server.html 
+# references: https://websockets.readthedocs.io/en/stable/reference/server.html , https://pypi.org/project/websockets/ 
 async def ws_echo(websocket):
     global tx_queue, rx_queue
 
