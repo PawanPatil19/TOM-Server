@@ -26,13 +26,13 @@ A server for TOM
 - install `conda` (e.g., [Anaconda](https://docs.anaconda.com/anaconda/install/)/[Miniconda](https://docs.conda.io/en/latest/miniconda.html))
 - create new conda environment `tom` using `conda env create -f environment-cpu.yml`
 - activate `tom1` environment, `conda activate tom1`
-- create a file `fitbit_credential.json` with Fitbit credentials (Note: json format must be correct)
--- ```json
-      {
-      "client_id": "XXXXX",
-      "client_secret": "YYYYYYYYYYYY"
-      }
-      ```
+- create a file `config/fitbit_credential.json` with Fitbit credentials (Note: json format must be correct)
+```json
+{
+"client_id": "XXXXX",
+"client_secret": "YYYYYYYYYYYY"
+}
+```
 - [Configure](https://docs.microsoft.com/en-us/windows/mixed-reality/develop/platform-capabilities-and-apis/using-the-windows-device-portal) the Hololens Device Portal. Save [your user credentials](https://docs.microsoft.com/en-us/windows/mixed-reality/develop/platform-capabilities-and-apis/using-the-windows-device-portal#creating-a-username-and-password) to `modules/hololens/hololens_config.py`
 
 
