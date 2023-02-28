@@ -24,7 +24,7 @@ A server for TOM
 
 ## Installation
 - install `conda` (e.g., [Anaconda](https://docs.anaconda.com/anaconda/install/)/[Miniconda](https://docs.conda.io/en/latest/miniconda.html))
-- create new conda environment `tom` using `conda env create -f environment.yml`
+- create new conda environment `tom` using `conda env create -f environment-cpu.yml`
 - activate `tom` environment, `conda activate tom`
 - create a file `fitbit_credential.json` with Fitbit credentials (Note: json format must be correct)
 -- ```json
@@ -44,6 +44,7 @@ A server for TOM
 - [Structuring Your Project](https://docs.python-guide.org/writing/structure/)
 - [Modules](https://docs.python.org/3/tutorial/modules.html#packages)
 - [python-testing](https://realpython.com/python-testing/)
+- To find/update dependencies, use `pip freeze > requirements.txt` or `conda env export > environment.yml`
 
 
 ## Third-party libraries
