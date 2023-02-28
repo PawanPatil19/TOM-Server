@@ -1,16 +1,16 @@
-﻿name: tom
+﻿name: tom1
 channels:
   - defaults
   - menpo
   - conda-forge
   - postelrich
 dependencies:
-  - python=3.9
+  - python=3.7
   - pip
   - pip:
-      - numpy==1.24.*
-      - pandas==1.5.*
-      - opencv-python==4.7.*
+      - numpy
+      - pandas
+      - opencv-python==4.1.*
       - ffmpeg==1.4.*
       - ffmpeg-python==0.2.*
       - python-vlc==3.0.*
@@ -19,3 +19,11 @@ dependencies:
       - pytest==7.1.*
       - git+https://github.com/orcasgit/python-fitbit.git
       - websockets==10.4.*
+      - tensorflow==2.3.0
+      - matplotlib
+      - lxml
+      - tqdm
+      - absl-py
+      - easydict
+      - pillow
+      - pyyaml
