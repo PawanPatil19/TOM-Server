@@ -4,9 +4,15 @@
 fitbit_credential.json
 fitbit_token.json
 
+# yolo
+**/checkpoints/
+**/*.weights
+**/detector_yolov3/
 
 # System Files
 .DS_Store
+**.DS_Store
+**/*.DS_Store
 Thumbs.db
 /local.properties
 
@@ -55,6 +61,7 @@ modules/*/__pycache__/
 *.py[cod]
 *$py.class
 **/*_lastrun.py
+**/__pycache__/
 
 
 # Distribution / packaging
