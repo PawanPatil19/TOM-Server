@@ -44,7 +44,7 @@ A server for TOM
 - [Structuring Your Project](https://docs.python-guide.org/writing/structure/)
 - [Modules](https://docs.python.org/3/tutorial/modules.html#packages)
 - [python-testing](https://realpython.com/python-testing/)
-- To find/update dependencies, use `pip freeze > requirements.txt` or `conda env export > environment.yml`
+- To find/update dependencies, use `pip freeze > requirements.txt` or `conda env export > environment.yml` [ref](https://stackoverflow.com/questions/31684375/automatically-create-requirements-txt)
 
 
 ## Third-party libraries
