@@ -2,7 +2,7 @@
 import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
 
-print(time_utility.get_date())
+
 
 flag_is_running = False
 
@@ -23,6 +23,7 @@ def start_app():
 
     fitbit_client = fitbit_web_api.get_auth_client(fitbit_credential, fitbit_token)
     today_string = time_utility.get_date("%Y-%m-%d")
+    print(today_string)
 
     # fitbit_raw_data_distance = fitbit_web_api.get_json_data(fitbit_client, today_string, fitbit_web_api.DATA_TYPE_DISTANCE, fitbit_web_api.DETAIL_LEVEL_1MIN)
     # print(f'\ndistance: {fitbit_raw_data_distance}')
@@ -34,7 +35,7 @@ def start_app():
     current_millis = 0
 
     while flag_is_running:
-        if time_utility.get_current_millis() - current_millis > 20*1000:
+        if time_utility.get_current_millis() - current_millis > 10*1000:
 
             fitbit_raw_data_heart_rate = fitbit_web_api.get_json_data(fitbit_client, today_string, fitbit_web_api.DATA_TYPE_HEART_RATE, fitbit_web_api.DETAIL_LEVEL_1SEC)
             # print(fitbit_raw_data_heart_rate)
