@@ -3,6 +3,9 @@
 ### main
 - description
 
+### dev/running_coach_demo2
+- add obstacle detection to `dev/running_coach_demo1`
+
 ### dev/running_coach_demo1
 - get heart rate from FitBit API and display on HoloLens2 via websocket connection
 
