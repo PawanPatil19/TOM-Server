@@ -4,13 +4,15 @@
 - description
 
 ### dev/running_coach_demo2
-- add obstacle detection to `dev/running_coach_demo1` via 'Yolo-v4'
+- add obstacle detection to `dev/running_coach_demo1` via 'YOLOv4'
 
 ### dev/running_coach_demo1
 - get heart rate from FitBit API and display on HoloLens2 via websocket connection
 
 ## TODO
-- 
+- move `hololens_config.py` to `config` folder with json
+- add test cases for all modules
+- remove saving token, e.g., `fitbit_credential.json`, `fitbit_token.json`
 
 ## Known issues/limitations
-- remove saving token, e.g., `fitbit_credential.json`, `fitbit_token.json`
+- 

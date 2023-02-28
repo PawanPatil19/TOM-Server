@@ -1,0 +1,41 @@
+---
+# if we want to use our own custom model
+CUSTOM: False
+CUSTOM_CLASSES:
+  - Cherrybot
+  - Leubot
+  - desk-lamp
+  - desk-bulb
+  - lab
+  - office
+  - ceiling-light
+  - office-light
+  - hue-green
+  - hue-yellow
+  - hue-red
+  - hue-purple
+  - window
+  - smartcard
+
+# if model is YOLO, delect if tiny version should be used which achieves around 30 frames per second on CPU
+USE_YOLO-TINY: True
+# the path to the HoloLens camera
+#VIDEO_SOURCE: https://hellojanaka:testing1234@192.168.5.21/api/holographic/stream/live.mp4?olo=true&pv=true&mic=true&loopback=true # LABNET LAB
+VIDEO_SOURCE: https://hellojanaka:testing1234@192.168.5.21/api/holographic/stream/live.mp4?olo=true&pv=true&mic=true&loopback=true # LABNET OFFICE
+# for testing it is maybe easier to use the webcam to detect some objects
+USE_WEBCAM: True
+# if we want to do object recognition
+RUN_INFERENCE: True
+# the minimum confidence level to say it is a valid detection
+MIN_CONFIDENCE_LEVEL: 0.7
+# minimum time in seconds a thing must be in the screen so that we display any recommendations
+MIN_TIME: 1.0
+# if we want to record the detections in a video by drawing rectangle boxes and assigning confidence values
+SHOW_OUTPUT: True
+# Path were the output video should be saved (as .avi)
+RESULT_PATH: /Users/hello/Downloads/results.avi
+# if HTTP request should be sent to an endpoint (usally a Microsoft Hololens) everytime a new object appears in the users field of view
+HOLO_ENDPOINT: False
+# the endpoint of the Microsoft Hololens or any other endpoint
+HOLO_ENDPOINT_URL: http://127.0.0.1:5050 # office
+#HOLO_ENDPOINT_URL: http://192.168.5.21:5050 # lab
