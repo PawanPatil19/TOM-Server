@@ -4,7 +4,6 @@
 
 import sys
 
-import VideoCapture
 from VideoCapture import VideoCapture
 
 

@@ -21,6 +21,7 @@ DATA_TYPE_CALORIES = 'activities/calories'
  
 DETAIL_LEVEL_1SEC = '1sec'
 DETAIL_LEVEL_1MIN = '1min'
+DETAIL_LEVEL_5MIN = '5min'
 DETAIL_LEVEL_15MIN = '15min'
 
 FITBIT_CREDENTIAL_FILE = 'config/fitbit_credential.json'  # has the 'client_id' and 'client_secret'

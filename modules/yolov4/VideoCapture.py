@@ -7,9 +7,8 @@ import cv2
 import numpy as np
 import time
 
-import VideoStream
+
 from VideoStream import VideoStream
-# from OutgoingAPI import APIHandler
 from StatusHandler import StatusHandler
 
 #import YoloInference
@@ -21,20 +20,20 @@ class VideoCapture:
 
     def __init__(
             self,
-            videoPath, # if webcam 0, else source
-            inference, # if object recognition is needed
-            confidenceLevel, # the minimum confidence level to say it is a valid detection
-            custom_classes, # list of custom classe, else default YOLO classes
-            tiny, # if model is YOLO, delect if tiny version should be used which achieves around 30 frames per second on CPU
-            show, # show (live) the detections in a video by drawing rectangle boxes and assigning confidence values
-            save, # save the detections in a video by drawing rectangle boxes and assigning confidence values
-            save_path, # video saving path
-            min_time, # minimum time in seconds a thing must be in the screen so that we display any recommendations
+            video_path = 0, # if webcam 0, else source
+            inference = True, # if object recognition is needed
+            confidence_level = 0.7, # the minimum confidence level to say it is a valid detection
+            custom_classes = [], # list of custom classe, else default YOLO classes
+            tiny = True, # if model is YOLO, delect if tiny version should be used which achieves around 30 frames per second on CPU
+            show = True, # show (live) the detections in a video by drawing rectangle boxes and assigning confidence values
+            save = True, # save the detections in a video by drawing rectangle boxes and assigning confidence values
+            save_path = 'yolo_video_output.avi', # video saving path
+            min_time = 1, # minimum time in seconds a thing must be in the screen so that we display any recommendations
             ):
 
-        self.videoPath = videoPath
+        self.videoPath = video_path
         self.inference = inference
-        self.confidenceLevel = confidenceLevel
+        self.confidenceLevel = confidence_level
         self.useStream = False
         self.useWebcam = False
         self.useMovieFile = False
@@ -43,14 +42,14 @@ class VideoCapture:
         self.vCapture = None
         self.displayFrame = None
         self.captureInProgress = False
-        self.custom_classes = custom_classes
+        self.customClasses = custom_classes
         self.tiny = tiny
-        self.show_result = show
-        self.save_result = save
-        self.result_path = save_path
+        self.showResult = show
+        self.saveResult = save
+        self.resultPath = save_path
         self.recommendation_thresh = min_time
         
-        self.custom = len(self.custom_classes) > 0
+        self.custom = len(self.customClasses) > 0
         self.detections_queue = []
         
 
@@ -63,12 +62,12 @@ class VideoCapture:
         print("   - ConfidenceLevel  : " + str(self.confidenceLevel))
         print("   - CustomDetection? : " + str(self.custom))
         if self.custom:
-            print("   - Custom Classes   : " + str(self.custom_classes))
+            print("   - Custom Classes   : " + str(self.customClasses))
         
         self.yoloInference = Detector(tiny=self.tiny, custom=self.custom) # yolov4
 
         if self.custom:
-            self.statusHandler = StatusHandler(custom_classes)
+            self.statusHandler = StatusHandler(self.customClasses)
         else:
             self.statusHandler = StatusHandler()
 
@@ -205,12 +204,12 @@ class VideoCapture:
         perFrameTimeInMs = 1000 / cameraFPS
 
         # by default VideoCapture returns float instead of int
-        if self.save_result: 
+        if self.saveResult: 
             codec = cv2.VideoWriter_fourcc(*"XVID")
             frame_size = (frame_width, frame_height)
-            out = cv2.VideoWriter(self.result_path, codec, cameraFPS, frame_size)
+            out = cv2.VideoWriter(self.resultPath, codec, cameraFPS, frame_size)
         
-        if self.show_result:
+        if self.showResult:
             cv2.namedWindow("Camera")
             cv2.moveWindow("Camera", 0, 0)
 
@@ -249,13 +248,13 @@ class VideoCapture:
 
                 last_fps = fps
 
-                if self.show_result or self.save_result:
+                if self.showResult or self.saveResult:
                     result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
                     
-                    if self.save_result:
+                    if self.saveResult:
                         out.write(result)
                         
-                    if self.show_result:
+                    if self.showResult:
                         cv2.imshow("Camera", result)
                         if cv2.waitKey(10) & 0xFF == ord('q'):
                             break

@@ -1,4 +1,6 @@
 #from os import initgroups
+from pathlib import Path
+
 import time
 import tensorflow as tf
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
@@ -52,6 +54,9 @@ class Detector:
                 self.weights = 'detector/checkpoints/custom-tiny-416'
             else:
                 self.weights = 'detector/checkpoints/custom-416'
+        
+        if not Path(self.weights).is_dir():
+            self.weights = "modules/yolov4/" + self.weights
         
         if self.framework == 'tflite':
             self.interpreter = tf.lite.Interpreter(model_path=self.weights)

@@ -2,7 +2,7 @@
 
 import pytest
 
-import utilities.time as time_utility
+import modules.utilities.time as time_utility
 
 def test_get_date():
     assert time_utility.get_date() == "20230221"

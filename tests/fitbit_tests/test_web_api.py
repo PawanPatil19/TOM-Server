@@ -1,8 +1,8 @@
 ﻿
 import pytest
 
-import utilities.time as time_utility
-import fitbit_web.web_api as fitbit_web_api
+import modules.utilities.time as time_utility
+import modules.fitbit_web.web_api as fitbit_web_api
 
 
 def test_api():

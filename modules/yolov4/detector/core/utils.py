@@ -79,7 +79,8 @@ def read_class_names(class_file_name):
 
     if not (file.exists()):
         # remove 'detector/'
-        class_file_name = class_file_name.replace("detector/", "")
+        class_file_name = class_file_name.replace("modules/yolov4/", "")
+        pass
 
     with open(class_file_name, 'r') as data:
         for ID, name in enumerate(data):

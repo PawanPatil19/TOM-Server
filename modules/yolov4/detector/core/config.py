@@ -12,7 +12,7 @@ cfg                           = __C
 __C.YOLO                      = edict()
 
 # PATH TO COCO CLASS NAMES
-__C.YOLO.CLASSES              = "detector/data/classes/coco.names"
+__C.YOLO.CLASSES              = "modules/yolov4/detector/data/classes/coco.names"
 
 # PATH TO CUSTOM CLASS NAMES
 # __C.YOLO.CLASSES              = "detector/data/classes/obj.names"

@@ -1,7 +1,7 @@
 # coding=utf-8
 
 import modules.utilities.network as network_utility
-import hololens_config
+from . import hololens_config as hololens_config
 
 # Note: Need to disable SSL connection (System->Preference)
 
