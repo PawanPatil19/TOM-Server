@@ -4,11 +4,6 @@ from __future__ import absolute_import
 
 import cv2
 import numpy as np
-import requests
-import time
-import json
-import os
-import signal
 import time
 
 import VideoStream
@@ -18,9 +13,7 @@ from OutgoingAPI import APIHandler
 #import YoloInference
 #from YoloInference import YoloInference
 
-import detector
 from detector.detector import Detector
-from detector.core.utils import draw_bbox
 
 class VideoCapture(object):
 
