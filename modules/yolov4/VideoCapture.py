@@ -50,8 +50,10 @@ class VideoCapture:
         self.save_result = save
         self.result_path = save_path
         self.recommendation_thresh = min_time
-
+        
         self.custom = len(self.custom_classes) > 0
+        self.detections_queue = []
+        
 
         print("VideoCapture::__init__()")
         print("OpenCV Version : %s" % (cv2.__version__))
@@ -164,6 +166,9 @@ class VideoCapture:
             if not self.captureInProgress:
                 time.sleep(1.0)
 
+    def get_detected_objects(self):
+        return self.detections_queue.copy()
+
     def __Run__(self):
 
         print("===============================================================")
@@ -210,8 +215,7 @@ class VideoCapture:
             cv2.namedWindow("Camera")
             cv2.moveWindow("Camera", 0, 0)
 
-        index_boundary = None
-        detections_queue = []
+        index_boundary = None        
         last_fps = 0
 
         while True:
@@ -247,7 +251,6 @@ class VideoCapture:
                 last_fps = fps
 
                 if self.show_result or self.save_result:
-                    # result = np.asarray(image)
                     result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
                     
                     if self.save_result:
@@ -282,9 +285,9 @@ class VideoCapture:
                                     ThingIsThere = True
 
                                     # if queue is already long enough, will equal to False for the first few frames
-                                    if len(detections_queue) >= index_boundary:
+                                    if len(self.detections_queue) >= index_boundary:
                                         # iterate over each previous detection
-                                        for i in detections_queue:
+                                        for i in self.detections_queue:
                                             # check if thing has been detected in each previous frame of the queue
                                             if any(classLabel in sl for sl in i):
                                                 continue
@@ -309,22 +312,22 @@ class VideoCapture:
                 try:
                     if len(queue_list) > 0:
                         # made some detections
-                        detections_queue.append(queue_list)
+                        self.detections_queue.append(queue_list)
                         queue_list = []
                     else:
                         # confidence too low or no detections at all
-                        detections_queue.append(["NaN"])
+                        self.detections_queue.append(["NaN"])
                 except NameError:
                     # no detections at all
-                    detections_queue.append(["NaN"])
+                    self.detections_queue.append(["NaN"])
                          
                 # calculate new first element of queue
-                first_element = len(detections_queue) - index_boundary
+                first_element = len(self.detections_queue) - index_boundary
                 if first_element > 0:
                     # update queue, leave out elements that are longer than MIN_TIME seconds ago
-                    detections_queue = detections_queue[first_element:]
+                    self.detections_queue = self.detections_queue[first_element:]
 
-                print(detections_queue)
+                print(self.detections_queue)
 
                 # get list of all objects that are currently there
                 things_displayed = [thing for thing, pres in self.statusHandler.statuses.items() if pres == 1]
@@ -333,7 +336,7 @@ class VideoCapture:
                 for thing in things_displayed: 
                     # check if thing is still somewhere in the queue
                     ThingIsThere = False
-                    for i in detections_queue:
+                    for i in self.detections_queue:
                         if any(thing in sl for sl in i):
                             ThingIsThere = True
                             break
