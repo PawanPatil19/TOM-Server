@@ -8,6 +8,7 @@ fitbit_token.json
 **/checkpoints/
 **/*.weights
 **/detector_yolov3/
+yolo_video_output.avi
 
 # System Files
 .DS_Store

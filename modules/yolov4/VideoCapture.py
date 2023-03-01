@@ -6,7 +6,6 @@ import sys
 import cv2
 import numpy as np
 import time
-from queue import Queue
 
 import VideoStream
 from VideoStream import VideoStream
@@ -22,15 +21,15 @@ class VideoCapture:
 
     def __init__(
             self,
-            videoPath,
-            inference,
-            confidenceLevel,
-            custom_classes,
-            tiny,
-            show,
-            save,
-            save_path,
-            min_time,
+            videoPath, # if webcam 0, else source
+            inference, # if object recognition is needed
+            confidenceLevel, # the minimum confidence level to say it is a valid detection
+            custom_classes, # list of custom classe, else default YOLO classes
+            tiny, # if model is YOLO, delect if tiny version should be used which achieves around 30 frames per second on CPU
+            show, # show (live) the detections in a video by drawing rectangle boxes and assigning confidence values
+            save, # save the detections in a video by drawing rectangle boxes and assigning confidence values
+            save_path, # video saving path
+            min_time, # minimum time in seconds a thing must be in the screen so that we display any recommendations
             ):
 
         self.videoPath = videoPath
@@ -302,6 +301,8 @@ class VideoCapture:
                                     if ThingIsThere:
                                         print("Thing {} is present.".format(classLabel))
                                         # TODO: send call to display all actions on the Hololens that are related with this object
+                                        # if self.statusHandler.statuses[classLabel] != 1:
+                                            
 
                                 # when thing is not of interest to us
                             except KeyError:
@@ -345,6 +346,7 @@ class VideoCapture:
                     if not ThingIsThere:
                         print("Thing {} is not present anymore.".format(thing))
                         # TODO: update state
+                        # if self.statusHandler.statuses[thing] != 0:
                 
             # Calculate FPS rate at which the VideoCapture is able to process the frames
             timeElapsedInMs = (time.time() - tFrameStart) * 1000
