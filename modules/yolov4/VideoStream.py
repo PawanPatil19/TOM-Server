@@ -6,7 +6,7 @@ import cv2
 from queue import Queue
 
 #This class reads all the video frames in a separate thread and always has the keeps only the latest frame in its queue to be grabbed by another thread
-class VideoStream(object):
+class VideoStream:
 	def __init__(self, path, queueSize=3):
 		print("===============================================================\r\nVideoStream::__init__()")
 		self.stream = cv2.VideoCapture(path)

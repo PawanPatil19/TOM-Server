@@ -1,11 +1,8 @@
 
-# is responsible for which objects and actions are currently displayed in the Hololens so that we know what the user is currently seeing
+# is responsible for which objects and actions are currently displayed in the camera so that we know what the user is currently seeing
 
 class StatusHandler:
     def __init__(self, custom_classes=[]):
-        # the current location of the user
-        self.lab_detected = False
-        self.office_detected = False
         # here we track if objects are present in scene or not
 
         if len(custom_classes) > 0:

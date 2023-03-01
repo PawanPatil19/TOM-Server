@@ -2,34 +2,35 @@
 from __future__ import division
 from __future__ import absolute_import
 
+import sys
 import cv2
 import numpy as np
 import time
+from queue import Queue
 
 import VideoStream
 from VideoStream import VideoStream
-from OutgoingAPI import APIHandler
+# from OutgoingAPI import APIHandler
+from StatusHandler import StatusHandler
 
 #import YoloInference
 #from YoloInference import YoloInference
 
 from detector.detector import Detector
 
-class VideoCapture(object):
+class VideoCapture:
 
     def __init__(
             self,
             videoPath,
             inference,
             confidenceLevel,
-            custom,
             custom_classes,
             tiny,
             show,
-            result_path,
+            save,
+            save_path,
             min_time,
-            holo_endpoint,
-            holo_url
             ):
 
         self.videoPath = videoPath
@@ -43,13 +44,14 @@ class VideoCapture(object):
         self.vCapture = None
         self.displayFrame = None
         self.captureInProgress = False
-        self.custom = custom
         self.custom_classes = custom_classes
         self.tiny = tiny
         self.show_result = show
-        self.result_path = result_path
+        self.save_result = save
+        self.result_path = save_path
         self.recommendation_thresh = min_time
-        self.holo_endpoint = holo_endpoint
+
+        self.custom = len(self.custom_classes) > 0
 
         print("VideoCapture::__init__()")
         print("OpenCV Version : %s" % (cv2.__version__))
@@ -57,21 +59,17 @@ class VideoCapture(object):
         print("Initialising Video Capture with the following parameters: ")
         print("   - Video path       : " + str(self.videoPath))
         print("   - Inference?       : " + str(self.inference))
-        print("   - ConficenceLevel  : " + str(self.confidenceLevel))
+        print("   - ConfidenceLevel  : " + str(self.confidenceLevel))
         print("   - CustomDetection? : " + str(self.custom))
         if self.custom:
             print("   - Custom Classes   : " + str(self.custom_classes))
-        print("   - HololensEndpoint?: " + str(self.holo_endpoint))
-        if self.holo_endpoint:
-            print("   - HololensUrl      : " + str(holo_url))
-        print("")
-
+        
         self.yoloInference = Detector(tiny=self.tiny, custom=self.custom) # yolov4
 
         if self.custom:
-            self.apiHandler = APIHandler(holo_url, self.custom_classes)
+            self.statusHandler = StatusHandler(custom_classes)
         else:
-            self.apiHandler =APIHandler(holo_url)
+            self.statusHandler = StatusHandler()
 
     def __IsCaptureDev(self, videoPath):
         try: 
@@ -147,7 +145,7 @@ class VideoCapture(object):
         else:
             print("===========================\r\nWARNING : No Video Source\r\n===========================\r\n")
             self.useStream = False
-            self.useYouTube = False
+            self.useWebcam = False
             self.vCapture = None
             self.vStream = None
         return self
@@ -203,9 +201,14 @@ class VideoCapture(object):
         perFrameTimeInMs = 1000 / cameraFPS
 
         # by default VideoCapture returns float instead of int
-        if self.show_result: 
+        if self.save_result: 
             codec = cv2.VideoWriter_fourcc(*"XVID")
-            out = cv2.VideoWriter(self.result_path, codec, cameraFPS, (frame_width, frame_height))
+            frame_size = (frame_width, frame_height)
+            out = cv2.VideoWriter(self.result_path, codec, cameraFPS, frame_size)
+        
+        if self.show_result:
+            cv2.namedWindow("Camera")
+            cv2.moveWindow("Camera", 0, 0)
 
         index_boundary = None
         detections_queue = []
@@ -243,10 +246,17 @@ class VideoCapture(object):
 
                 last_fps = fps
 
-                if self.show_result:
-                    result = np.asarray(image)
+                if self.show_result or self.save_result:
+                    # result = np.asarray(image)
                     result = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-                    out.write(result)
+                    
+                    if self.save_result:
+                        out.write(result)
+                        
+                    if self.show_result:
+                        cv2.imshow("Camera", result)
+                        if cv2.waitKey(10) & 0xFF == ord('q'):
+                            break
                 
                 # handle Object presence
                 if len(detections) > 0:
@@ -255,7 +265,7 @@ class VideoCapture(object):
                         classLabel, confidence = detection[0], detection[1]
                         if confidence > self.confidenceLevel:
                             
-                            # as we don't care about the color becuase we retrieve the current air quality from the sensor directly and not over the color of the hue lamp
+                            # as we don't care about the color because we retrieve the current air quality from the sensor directly and not over the color of the hue lamp
                             if "hue" in classLabel:
                                 classLabel = "hue"
 
@@ -265,35 +275,35 @@ class VideoCapture(object):
                             print("Confidence: {}".format(confidence))
 
                             # if notification should be send out to endpoint that thing is present
-                            if self.holo_endpoint:
-                                try:
-                                    # we only send the notification once, when the state changes from 0 to 1
-                                    if self.apiHandler.statusHandler.statuses[classLabel] != 1:
+                            try:
+                                # we only send the notification once, when the state changes from 0 to 1
+                                if self.statusHandler.statuses[classLabel] != 1:
 
-                                        ThingIsThere = True
-                                        
-                                        # if queue is already long enough, will equal to False for the first few frames
-                                        if len(detections_queue) >= index_boundary:  
-                                            # iterate over each previous detection
-                                            for i in detections_queue:
-                                                # check if thing has been detected in each previous frame of the queue
-                                                if any(classLabel in sl for sl in i):
-                                                    continue
-                                                else:
-                                                    # thing is relatively new / user is not looking long enough at the thing
-                                                    ThingIsThere = False
-                                                    break 
-                                        else:
-                                            # thing is there and notification has already been sent
-                                            ThingIsThere = False
-                                        
-                                        if ThingIsThere:
-                                            print("Thing is there")
-                                            self.apiHandler.handleThing(thing=classLabel, display=1) # send call to display all actions on the Hololens that are related with this object
-                                
+                                    ThingIsThere = True
+
+                                    # if queue is already long enough, will equal to False for the first few frames
+                                    if len(detections_queue) >= index_boundary:
+                                        # iterate over each previous detection
+                                        for i in detections_queue:
+                                            # check if thing has been detected in each previous frame of the queue
+                                            if any(classLabel in sl for sl in i):
+                                                continue
+                                            else:
+                                                # thing is relatively new / user is not looking long enough at the thing
+                                                ThingIsThere = False
+                                                break
+                                    else:
+                                        # thing is there and notification has already been sent
+                                        ThingIsThere = False
+
+                                    if ThingIsThere:
+                                        print("Thing {} is present.".format(classLabel))
+                                        # TODO: send call to display all actions on the Hololens that are related with this object
+
                                 # when thing is not of interest to us
-                                except KeyError:
-                                    pass
+                            except KeyError:
+                                pass
+                                
 
                 # build the new queue element
                 try:
@@ -317,7 +327,7 @@ class VideoCapture(object):
                 print(detections_queue)
 
                 # get list of all objects that are currently there
-                things_displayed = [thing for thing, pres in self.apiHandler.statusHandler.statuses.items() if pres == 1]
+                things_displayed = [thing for thing, pres in self.statusHandler.statuses.items() if pres == 1]
 
                 # check if all object are still there
                 for thing in things_displayed: 
@@ -330,9 +340,8 @@ class VideoCapture(object):
                     
                     # thing is no longer in queue
                     if not ThingIsThere:
-                        # update state
-                        self.apiHandler.handleThing(thing=thing, display=0)
                         print("Thing {} is not present anymore.".format(thing))
+                        # TODO: update state
                 
             # Calculate FPS rate at which the VideoCapture is able to process the frames
             timeElapsedInMs = (time.time() - tFrameStart) * 1000

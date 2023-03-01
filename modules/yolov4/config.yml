@@ -1,21 +1,6 @@
 ---
 # if we want to use our own custom model
-CUSTOM: False
-CUSTOM_CLASSES:
-  - Cherrybot
-  - Leubot
-  - desk-lamp
-  - desk-bulb
-  - lab
-  - office
-  - ceiling-light
-  - office-light
-  - hue-green
-  - hue-yellow
-  - hue-red
-  - hue-purple
-  - window
-  - smartcard
+CUSTOM_CLASSES: []
 
 # if model is YOLO, delect if tiny version should be used which achieves around 30 frames per second on CPU
 USE_YOLO-TINY: True
@@ -32,10 +17,6 @@ MIN_CONFIDENCE_LEVEL: 0.7
 MIN_TIME: 1.0
 # if we want to record the detections in a video by drawing rectangle boxes and assigning confidence values
 SHOW_OUTPUT: True
+SAVE_OUTPUT: True
 # Path were the output video should be saved (as .avi)
 RESULT_PATH: /Users/hello/Downloads/results.avi
-# if HTTP request should be sent to an endpoint (usally a Microsoft Hololens) everytime a new object appears in the users field of view
-HOLO_ENDPOINT: False
-# the endpoint of the Microsoft Hololens or any other endpoint
-HOLO_ENDPOINT_URL: http://127.0.0.1:5050 # office
-#HOLO_ENDPOINT_URL: http://192.168.5.21:5050 # lab

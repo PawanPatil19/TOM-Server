@@ -16,14 +16,12 @@ def main(
         videoPath,
         inference,
         confidenceLevel,
-        custom,
         custom_classes,
         tiny,
         show,
+        save,
         output,
         min_time,
-        holo_endpoint,
-        holo_url
         ):
 
     global videoCapture
@@ -35,14 +33,12 @@ def main(
         with VideoCapture(videoPath,
                          inference,
                          confidenceLevel,
-                         custom,
                          custom_classes,
                          tiny,
                          show,
+                         save,
                          output,
                          min_time,
-                         holo_endpoint,
-                         holo_url
                          ) as videoCapture:
                          
             videoCapture.start()
@@ -68,14 +64,12 @@ def Run():
         VIDEO_PATH,
         cfg['RUN_INFERENCE'],
         cfg['MIN_CONFIDENCE_LEVEL'],
-        cfg['CUSTOM'],
         cfg['CUSTOM_CLASSES'],
         cfg['USE_YOLO-TINY'],
         cfg['SHOW_OUTPUT'],
+        cfg['SAVE_OUTPUT'],
         cfg['RESULT_PATH'],
         cfg['MIN_TIME'],
-        cfg['HOLO_ENDPOINT'],
-        cfg['HOLO_ENDPOINT_URL']
         )
 
 if __name__ == '__main__':
