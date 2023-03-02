@@ -1,4 +1,7 @@
 ﻿import threading
+import traceback
+import sys
+from collections import Counter
 
 import modules.fitbit_web.web_api as fitbit_web_api
 import modules.utilities.time as time_utility
@@ -8,6 +11,10 @@ from modules.yolov4.VideoCapture import VideoCapture as YoloDetector
 import modules.hololens.hololens_portal as hololens_portal
 
 flag_is_running = False
+
+def send_socket_server(data):
+    print(data)
+    socket_server.send_data(data)
 
 def start_fitbit():
     global flag_is_running
@@ -34,24 +41,29 @@ def start_fitbit():
     while flag_is_running:
         result = ''
         if time_utility.get_current_millis() - current_millis_heart_rate > 10*1000:
-            
-            fitbit_raw_data_heart_rate = fitbit_web_api.get_json_data(fitbit_client, today_string, fitbit_web_api.DATA_TYPE_HEART_RATE, fitbit_web_api.DETAIL_LEVEL_1SEC)
-            # print(fitbit_raw_data_heart_rate)
-            df = fitbit_web_api.get_data_frame(fitbit_raw_data_heart_rate, fitbit_web_api.DATA_TYPE_HEART_RATE)
-            result += f'HR:{df.iloc[-1]["value"]},'
+            try:
+                fitbit_raw_data_heart_rate = fitbit_web_api.get_json_data(fitbit_client, today_string, fitbit_web_api.DATA_TYPE_HEART_RATE, fitbit_web_api.DETAIL_LEVEL_1SEC)
+                # print(fitbit_raw_data_heart_rate)
+                df = fitbit_web_api.get_data_frame(fitbit_raw_data_heart_rate, fitbit_web_api.DATA_TYPE_HEART_RATE)
+                result += f'HR:{df.iloc[-1]["value"]},'
+            except Exception as e:
+                traceback.print_exc(file=sys.stdout)
 
             current_millis_heart_rate = time_utility.get_current_millis()
 
         if time_utility.get_current_millis() - current_millis_steps > 60*1000:
-            fitbit_raw_data_steps = fitbit_web_api.get_json_data(fitbit_client, today_string, fitbit_web_api.DATA_TYPE_STEPS, fitbit_web_api.DETAIL_LEVEL_1MIN)
-            df = fitbit_web_api.get_data_frame(fitbit_raw_data_steps, fitbit_web_api.DATA_TYPE_STEPS)
-            result += f'STEPS:{df.iloc[-1]["value"]},'
+            try:
+                fitbit_raw_data_steps = fitbit_web_api.get_json_data(fitbit_client, today_string, fitbit_web_api.DATA_TYPE_STEPS, fitbit_web_api.DETAIL_LEVEL_1MIN)
+                df = fitbit_web_api.get_data_frame(fitbit_raw_data_steps, fitbit_web_api.DATA_TYPE_STEPS)
+                result += f'STEPS:{df.iloc[-1]["value"]},'
+            except Exception as e:
+                traceback.print_exc(file=sys.stdout)
+            
 
             current_millis_steps = time_utility.get_current_millis()
 
         if result != '':
-            print(result)
-            # socket_server.send_data(result)
+            send_socket_server(result)
 
             # utilities.send_get_request(f'http://127.0.0.1:5050/?HR: {last_row_val}=1')
             # curl -X POST -d "" http://127.0.0.1:5050/?Hello=1 
@@ -64,13 +76,32 @@ def start_fitbit_threaded():
     server_thread.start()
 
 
-def _monitor_yolo_detection(detector, min_gap):
+def _monitor_yolo_detection(detector, min_gap, min_detection_count = 3):
     global flag_is_running
+    
+    detection_init = Counter()
     
     while flag_is_running:
         detections  = detector.get_detected_objects()
-        print(f'Detected: {detections}')
+        # print(f'Detected: {detections}')
+        filtered_detections = [j for sub in detections for j in sub if j != 'NaN']
+        detection_now = Counter(filtered_detections)
+        detection_diff = Counter(detection_now)
+        detection_diff.subtract(detection_init)
+        
+        print(detection_diff)
+        result = ''
+        for item in detection_diff:
+            if detection_diff[item] >= min_detection_count:
+                result += f'DETECT:{item},'
+            elif detection_diff[item] <= -min_detection_count:
+                result += f'UNDETECT:{item},'
 
+        if result != '':
+            send_socket_server(result)
+
+        detection_init = detection_now
+        
         time_utility.sleep_seconds(min_gap)
     
 def start_yolo():
@@ -93,8 +124,8 @@ def run():
     flag_is_running = True
     socket_server.start_server_threaded()
 
-    start_fitbit_threaded()
-    # start_yolo()
+    # start_fitbit_threaded()
+    start_yolo()
     
     socket_server.stop_server_threaded()
     

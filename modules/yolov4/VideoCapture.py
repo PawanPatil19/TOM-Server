@@ -327,7 +327,7 @@ class VideoCapture:
                     # update queue, leave out elements that are longer than MIN_TIME seconds ago
                     self.detections_queue = self.detections_queue[first_element:]
 
-                print(self.detections_queue)
+                # print(self.detections_queue)
 
                 # get list of all objects that are currently there
                 things_displayed = [thing for thing, pres in self.statusHandler.statuses.items() if pres == 1]
