@@ -152,11 +152,11 @@ def run(fitbit=False, hololens=False):
     if fitbit:
         start_fitbit_threaded()
 
-    # if hololens:
-    #     start_yolo(hololens_portal.API_STREAM_VIDEO)
-    # else:
-    #     start_yolo(0)
-    time_utility.sleep_seconds(10)
+    if hololens:
+        start_yolo(hololens_portal.API_STREAM_VIDEO)
+    else:
+        start_yolo(0)
+    # time_utility.sleep_seconds(10)
     
     socket_server.stop_server_threaded()
 
