@@ -50,7 +50,8 @@ def start_fitbit():
                                                                           fitbit_web_api.DETAIL_LEVEL_1SEC)
                 # print(fitbit_raw_data_heart_rate)
                 df = fitbit_web_api.get_data_frame(fitbit_raw_data_heart_rate, fitbit_web_api.DATA_TYPE_HEART_RATE)
-                result += f'HR|{df.iloc[-1]["value"]} BPM,'
+                heart_rate = df.iloc[-1]["value"]
+                result += f'HR|{heart_rate} BPM,'
             except Exception:
                 traceback.print_exc(file=sys.stdout)
 
@@ -62,7 +63,9 @@ def start_fitbit():
                                                                      fitbit_web_api.DATA_TYPE_STEPS,
                                                                      fitbit_web_api.DETAIL_LEVEL_1MIN)
                 df = fitbit_web_api.get_data_frame(fitbit_raw_data_steps, fitbit_web_api.DATA_TYPE_STEPS)
-                result += f'STEPS|{df.iloc[-1]["value"]} Steps,'
+                # steps = df.iloc[-1]["value"]
+                steps = df["value"].sum()
+                result += f'STEPS|{steps} Steps,'
             except Exception:
                 traceback.print_exc(file=sys.stdout)
 
@@ -127,11 +130,8 @@ def _monitor_yolo_detection(detector, min_gap, min_detection_count=3):
         time_utility.sleep_seconds(min_gap)
 
 
-def start_yolo():
+def start_yolo(video_src):
     global flag_is_running
-
-    # video_src = hololens_portal.API_STREAM_VIDEO 
-    video_src = 0
 
     try:
         with YoloDetector(video_src, min_time=1) as yoloDetector:
@@ -141,17 +141,27 @@ def start_yolo():
         print("Yolo module stopped")
 
 
-def run():
+def run(fitbit=False, hololens=False):
     global flag_is_running
 
     flag_is_running = True
     socket_server.start_server_threaded()
 
-    # start_fitbit_threaded()
     start_timer_threaded()
-    start_yolo()
 
+    if fitbit:
+        start_fitbit_threaded()
+
+    # if hololens:
+    #     start_yolo(hololens_portal.API_STREAM_VIDEO)
+    # else:
+    #     start_yolo(0)
+    time_utility.sleep_seconds(10)
+    
     socket_server.stop_server_threaded()
 
 
-run()
+_hololens = input("Hololens (e.g., 0/1)?")
+_fitbit = input("Fitbit (e.g., 0/1)?")
+
+run(_fitbit == "1", _hololens == "1")
