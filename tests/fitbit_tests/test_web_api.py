@@ -13,7 +13,7 @@ def test_api():
         fitbit_web_api.save_fitbit_token(fitbit_token)
 
     fitbit_client = fitbit_web_api.get_auth_client(fitbit_credential, fitbit_token)
-    today_string = time_utility.get_date("%Y-%m-%d")
+    today_string = time_utility.get_date_string("%Y-%m-%d")
 
     fitbit_raw_data_distance = fitbit_web_api.get_json_data(fitbit_client, today_string, fitbit_web_api.DATA_TYPE_DISTANCE, fitbit_web_api.DETAIL_LEVEL_1MIN)
     # print(f'\ndistance: {fitbit_raw_data_distance}')

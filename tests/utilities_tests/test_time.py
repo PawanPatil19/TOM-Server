@@ -4,5 +4,5 @@ import pytest
 
 import modules.utilities.time as time_utility
 
-def test_get_date():
-    assert time_utility.get_date() == "20230221"
+def test_get_date_string():
+    assert time_utility.get_date_string() == "20230221"

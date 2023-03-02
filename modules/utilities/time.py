@@ -2,7 +2,7 @@
 
 import sys
 import time
-
+from datetime import datetime
 
 def beep(times=1):
     for i in range(1, times):
@@ -31,8 +31,21 @@ def sleep_milliseconds(milliseconds=1):
     time.sleep(milliseconds / 1000)
 
 
-def get_date(format="%Y%m%d"):
+def get_date_string(format = "%Y%m%d"):
     return time.strftime(format)
+
+
+def get_time_string(format = "%H:%M:%S"):
+    return time.strftime(format)
+
+# return date_time object
+def get_date_time_now():
+    return datetime.now()
+
+
+def get_date_time_diff_string(date_time1, date_time2, format = "%H:%M:%S"):
+    return (date_time1 - date_time2).strftime("%H:%M:%S")
+
 
 # print(get_date())
 # print(get_date("%Y-%m-%d"))
