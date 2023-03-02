@@ -2,7 +2,7 @@
 
 # This code is copied from [HeadsUp-PilotAnalyzer](https://github.com/NUS-HCILab/HeadsUp-PilotAnalyzer/blob/main/stream_player.py)
 
-import hololens_portal
+from . import hololens_portal as hololens_portal
 import cv2
 
 import time
@@ -15,6 +15,7 @@ flag_is_running = False
 
 
 def run_with_opencv():
+    global flag_is_running
     # Replace the video capture attributes based on the need
     cap = cv2.VideoCapture(hololens_portal.API_STREAM_VIDEO)
     size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))

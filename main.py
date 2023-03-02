@@ -46,7 +46,7 @@ def start_fitbit():
                 # print(fitbit_raw_data_heart_rate)
                 df = fitbit_web_api.get_data_frame(fitbit_raw_data_heart_rate, fitbit_web_api.DATA_TYPE_HEART_RATE)
                 result += f'HR:{df.iloc[-1]["value"]},'
-            except Exception as e:
+            except Exception:
                 traceback.print_exc(file=sys.stdout)
 
             current_millis_heart_rate = time_utility.get_current_millis()
@@ -56,7 +56,7 @@ def start_fitbit():
                 fitbit_raw_data_steps = fitbit_web_api.get_json_data(fitbit_client, today_string, fitbit_web_api.DATA_TYPE_STEPS, fitbit_web_api.DETAIL_LEVEL_1MIN)
                 df = fitbit_web_api.get_data_frame(fitbit_raw_data_steps, fitbit_web_api.DATA_TYPE_STEPS)
                 result += f'STEPS:{df.iloc[-1]["value"]},'
-            except Exception as e:
+            except Exception:
                 traceback.print_exc(file=sys.stdout)
             
 
