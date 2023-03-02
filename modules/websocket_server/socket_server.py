@@ -24,7 +24,11 @@ async def ws_echo(websocket):
             print(f'Received data: {rx_data}')
 
             if not tx_queue.empty():
-                tx_data = tx_queue.get_nowait()
+                # TODO: decide whether to send all items or one at a time
+                tx_data_list = []
+                while not tx_queue.empty():
+                    tx_data_list.append(tx_queue.get_nowait())
+                tx_data = ''.join(tx_data_list)
                 await websocket.send(tx_data)
                 print(f'Sent data: {tx_data}')
                 del tx_data

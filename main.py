@@ -50,7 +50,7 @@ def start_fitbit():
                                                                           fitbit_web_api.DETAIL_LEVEL_1SEC)
                 # print(fitbit_raw_data_heart_rate)
                 df = fitbit_web_api.get_data_frame(fitbit_raw_data_heart_rate, fitbit_web_api.DATA_TYPE_HEART_RATE)
-                result += f'HR|{df.iloc[-1]["value"]},'
+                result += f'HR|{df.iloc[-1]["value"]} BPM,'
             except Exception:
                 traceback.print_exc(file=sys.stdout)
 
@@ -62,7 +62,7 @@ def start_fitbit():
                                                                      fitbit_web_api.DATA_TYPE_STEPS,
                                                                      fitbit_web_api.DETAIL_LEVEL_1MIN)
                 df = fitbit_web_api.get_data_frame(fitbit_raw_data_steps, fitbit_web_api.DATA_TYPE_STEPS)
-                result += f'STEPS|{df.iloc[-1]["value"]},'
+                result += f'STEPS|{df.iloc[-1]["value"]} Steps,'
             except Exception:
                 traceback.print_exc(file=sys.stdout)
 
@@ -89,7 +89,7 @@ def start_timer():
     while flag_is_running:
         t += 1
         mins, secs = divmod(t, 60)
-        send_socket_server('TIME|{:02d}:{:02d}'.format(mins, secs))
+        send_socket_server('TIME|{:02d}:{:02d},'.format(mins, secs))
         time_utility.sleep_seconds(1)
 
 
@@ -149,7 +149,7 @@ def run():
 
     # start_fitbit_threaded()
     start_timer_threaded()
-    # start_yolo()
+    start_yolo()
 
     socket_server.stop_server_threaded()
 
