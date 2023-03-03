@@ -6,7 +6,7 @@ import sys
 import threading
 
 SERVER_IP = ""
-SERVER_PORT = 8080
+SERVER_PORT = 8090
 
 CONNECTIONS = set()
 
