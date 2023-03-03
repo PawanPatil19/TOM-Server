@@ -117,11 +117,12 @@ def _monitor_yolo_detection(detector, min_gap, min_detection_count=3):
         print(detection_diff)
         result = ''
         for item in detection_diff:
-            if detection_diff[item] >= min_detection_count:
+            if detection_diff[item] <= -min_detection_count:
+                # result += f'UNDETECT|{item},'
+                result += f'UNDETECT|,'
+            elif detection_diff[item] >= min_detection_count:
                 result += f'DETECT|{item},'
-            elif detection_diff[item] <= -min_detection_count:
-                result += f'UNDETECT|{item},'
-
+            
         if result != '':
             send_socket_server(result)
 
