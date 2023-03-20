@@ -24,8 +24,8 @@ A server for TOM
 
 ## Installation
 - install `conda` (e.g., [Anaconda](https://docs.anaconda.com/anaconda/install/)/[Miniconda](https://docs.conda.io/en/latest/miniconda.html))
-- create new conda environment `tom` using `conda env create -f environment-cpu.yml`
-- activate `tom1` environment, `conda activate tom1`
+- create new conda environment `tom` using `conda env create -f environment-cpu.yml` (Note: if you want plan to use `yolov4` module, please use the environment at [dev/running_coach_demo2](https://github.com/NUS-SSI/TOM-Server-Python/blob/dev/running_coach_demo2/environment-cpu.yml))
+- activate `tom` environment, `conda activate tom`
 - create a file `config/fitbit_credential.json` with Fitbit credentials (Note: json format must be correct)
 ```json
 {
