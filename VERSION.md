@@ -3,6 +3,10 @@
 ### main
 - description
 
+### dev/running_coach_demo3
+- add support for WearOS devices to read sensor data via network
+- fix issue with websocket communication
+
 ### dev/running_coach_demo2
 - add obstacle detection to `dev/running_coach_demo1` via 'YOLOv4'
 
