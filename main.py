@@ -2,8 +2,8 @@
 import traceback
 import sys
 from collections import Counter
+import random
 
-import modules.fitbit_web.web_api as fitbit_web_api
 import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
 
@@ -18,70 +18,32 @@ def send_socket_server(data):
     socket_server.send_data(data)
 
 
-def start_fitbit():
+def start_wearos():
     global flag_is_running
 
-    fitbit_credential = fitbit_web_api.read_fitbit_credential()
-    fitbit_token = fitbit_web_api.read_fitbit_token()
-    if fitbit_token is None:
-        fitbit_token = fitbit_web_api.get_authorize_token(fitbit_credential)
-        fitbit_web_api.save_fitbit_token(fitbit_token)
-
-    fitbit_client = fitbit_web_api.get_auth_client(fitbit_credential, fitbit_token)
-    today_string = time_utility.get_date_string("%Y-%m-%d")
-    print(f'Today:{today_string}')
-
-    # fitbit_raw_data_distance = fitbit_web_api.get_json_data(fitbit_client, today_string, fitbit_web_api.DATA_TYPE_DISTANCE, fitbit_web_api.DETAIL_LEVEL_1MIN)
-    # print(f'\ndistance: {fitbit_raw_data_distance}')
-    # 
-    # fitbit_raw_data_steps = fitbit_web_api.get_json_data(fitbit_client, today_string, fitbit_web_api.DATA_TYPE_STEPS, fitbit_web_api.DETAIL_LEVEL_1MIN)
-    # print(f'\nsteps: {fitbit_raw_data_steps}')
-
-    current_millis_heart_rate = 0
-    current_millis_steps = 0
+    heart_rate = 0
+    steps = 0
 
     while flag_is_running:
         result = ''
 
-        if time_utility.get_current_millis() - current_millis_heart_rate > 10 * 1000:
-            try:
-                fitbit_raw_data_heart_rate = fitbit_web_api.get_json_data(fitbit_client, today_string,
-                                                                          fitbit_web_api.DATA_TYPE_HEART_RATE,
-                                                                          fitbit_web_api.DETAIL_LEVEL_1SEC)
-                # print(fitbit_raw_data_heart_rate)
-                df = fitbit_web_api.get_data_frame(fitbit_raw_data_heart_rate, fitbit_web_api.DATA_TYPE_HEART_RATE)
-                heart_rate = df.iloc[-1]["value"]
-                result += f'HR|{heart_rate} BPM,'
-            except Exception:
-                traceback.print_exc(file=sys.stdout)
+        steps += random.randint(0, 9)
+        result += f'STEPS|{steps} Steps,'
 
-            current_millis_heart_rate = time_utility.get_current_millis()
-
-        if time_utility.get_current_millis() - current_millis_steps > 60 * 1000:
-            try:
-                fitbit_raw_data_steps = fitbit_web_api.get_json_data(fitbit_client, today_string,
-                                                                     fitbit_web_api.DATA_TYPE_STEPS,
-                                                                     fitbit_web_api.DETAIL_LEVEL_1MIN)
-                df = fitbit_web_api.get_data_frame(fitbit_raw_data_steps, fitbit_web_api.DATA_TYPE_STEPS)
-                # steps = df.iloc[-1]["value"]
-                steps = df["value"].sum()
-                result += f'STEPS|{steps} Steps,'
-            except Exception:
-                traceback.print_exc(file=sys.stdout)
-
-            current_millis_steps = time_utility.get_current_millis()
+        heart_rate = random.randint(70,80)
+        result += f'HR|{heart_rate} BPM,'
 
         if result != '':
             send_socket_server(result)
 
             # utilities.send_get_request(f'http://127.0.0.1:5050/?HR: {last_row_val}=1')
-            # curl -X POST -d "" http://127.0.0.1:5050/?Hello=1 
+            # curl -X POST -d "" http://127.0.0.1:5050/?Hello=1
 
         time_utility.sleep_seconds(1)
 
 
-def start_fitbit_threaded():
-    server_thread = threading.Thread(target=start_fitbit, daemon=True)
+def start_wearos_threaded():
+    server_thread = threading.Thread(target=start_wearos, daemon=True)
     server_thread.start()
 
 
@@ -142,7 +104,7 @@ def start_yolo(video_src):
         print("Yolo module stopped")
 
 
-def run(fitbit=False, hololens=False):
+def run(wearos=False, hololens=False):
     global flag_is_running
 
     flag_is_running = True
@@ -150,8 +112,8 @@ def run(fitbit=False, hololens=False):
 
     start_timer_threaded()
 
-    if fitbit:
-        start_fitbit_threaded()
+    if wearos:
+        start_wearos_threaded()
 
     if hololens:
         start_yolo(hololens_portal.API_STREAM_VIDEO)
@@ -163,6 +125,6 @@ def run(fitbit=False, hololens=False):
 
 
 _hololens = input("Hololens (e.g., 0/1)?")
-_fitbit = input("Fitbit (e.g., 0/1)?")
+_wearos = input("Wearos (e.g., 0/1)?")
 
-run(_fitbit == "1", _hololens == "1")
+run(_wearos == "1", _hololens == "1")
