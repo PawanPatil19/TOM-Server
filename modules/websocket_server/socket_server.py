@@ -8,39 +8,28 @@ import threading
 SERVER_IP = ""
 SERVER_PORT = 8090
 
-CONNECTIONS = set()
-
-tx_queue = Queue()
-rx_queue = Queue()
+_CONNECTIONS = set()
+_rx_queue = Queue()
 
 # references: https://websockets.readthedocs.io/en/stable/reference/server.html , https://pypi.org/project/websockets/ 
 async def ws_echo(websocket):
-    global tx_queue, rx_queue
+    global _rx_queue
 
-    CONNECTIONS.add(websocket)
+    _CONNECTIONS.add(websocket)
     try:
         async for rx_data in websocket:
-            rx_queue.put_nowait(rx_data)
+            _rx_queue.put_nowait(rx_data)
             print(f'Received data: {rx_data}')
 
-            if not tx_queue.empty():
-                # TODO: decide whether to send all items or one at a time
-                tx_data_list = []
-                while not tx_queue.empty():
-                    tx_data_list.append(tx_queue.get_nowait())
-                tx_data = ''.join(tx_data_list)
-                await websocket.send(tx_data)
-                print(f'Sent data: {tx_data}')
-                del tx_data
     except Exception:
         traceback.print_exc(file=sys.stdout)
     finally:
-        CONNECTIONS.remove(websocket)
+        _CONNECTIONS.remove(websocket)
 
 
 # Broadcast message to all websocket clients. 
 def broadcastmsg(msg):
-    websockets.broadcast(CONNECTIONS, msg)
+    websockets.broadcast(_CONNECTIONS, msg)
 
 
 async def ws_main():
@@ -61,23 +50,26 @@ def start_server():
 def stop_server():
     pass
     
-    
-def send_data(data):
-    global tx_queue
 
-    print(f'tx_size: {tx_queue.qsize()}')
-    tx_queue.put_nowait(data)
+async def send_data_to_websockets(data):
+    for _websocket in _CONNECTIONS:
+        await _websocket.send(data)
+    print(f'Sent data: {data}')
+
+
+def send_data(data):
+    asyncio.run(send_data_to_websockets(data))
 
 
 def receive_data():
-    global rx_queue
+    global _rx_queue
 
-    if rx_queue.empty():
+    if _rx_queue.empty():
         return None
 
-    print(f'rx_size: {rx_queue.qsize()}')
+    print(f'rx_size: {_rx_queue.qsize()}')
 
-    return rx_queue.get_nowait()
+    return _rx_queue.get_nowait()
 
 
 server_thread = None
