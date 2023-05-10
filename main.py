@@ -22,13 +22,13 @@ def start_wearos():
     global flag_is_running
 
     heart_rate = 0
-    steps = 0
+    distance = 0
 
     while flag_is_running:
         result = ''
 
-        steps += random.randint(0, 9)
-        result += f'STEPS|{steps} Steps,'
+        distance += (random.randint(1, 9) / 1000)
+        result += f'DISTANCE|{round(distance, 2)} km,'
 
         heart_rate = random.randint(70,80)
         result += f'HR|{heart_rate} BPM,'
@@ -54,7 +54,7 @@ def start_timer():
     while flag_is_running:
         t += 1
         mins, secs = divmod(t, 60)
-        send_socket_server('TIME|{:02d}:{:02d},'.format(mins, secs))
+        send_socket_server('TIMER|{:02d}:{:02d},'.format(mins, secs))
         time_utility.sleep_seconds(1)
 
 
@@ -81,9 +81,9 @@ def _monitor_yolo_detection(detector, min_gap, min_detection_count=3):
         for item in detection_diff:
             if detection_diff[item] <= -min_detection_count:
                 # result += f'UNDETECT|{item},'
-                result += f'UNDETECT|,'
+                result += f'INSTRUCT|,'
             elif detection_diff[item] >= min_detection_count:
-                result += f'DETECT|{item},'
+                result += f'INSTRUCT|{item},'
             
         if result != '':
             send_socket_server(result)
