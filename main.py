@@ -18,20 +18,40 @@ def send_socket_server(data):
     socket_server.send_data(data)
 
 
+def get_socket_data():
+    return socket_server.receive_data()
+
 def start_wearos():
     global flag_is_running
 
     heart_rate = 0
     distance = 0
+    time = ""
+
+    start_time = time_utility.get_current_millis();
 
     while flag_is_running:
         result = ''
 
-        distance += (random.randint(1, 9) / 1000)
+        distance += (random.randint(1, 5) / 1000)
         result += f'DISTANCE|{round(distance, 2)} km,'
 
         heart_rate = random.randint(70,80)
         result += f'HR|{heart_rate} BPM,'
+
+        time = time_utility.get_time_string("%I:%M %p")
+        result += f'TIME|{time},'
+
+        total_min = (time_utility.get_current_millis() - start_time) / (1000*60)
+        speed = total_min / distance
+        result += f'SPEED|{round(speed, 2)} min/km,'
+
+        socket_data = get_socket_data()
+        if "REQUEST_RUNNING_SUMMARY" == socket_data:
+            result += f'DETAILS| Evening run,'
+            result += f'AVG_SPEED|{round(speed, 2)} min/km,'
+            result += f'TOT_DISTANCE|{round(distance, 2)} km,'
+            result += 'TOT_TIME|{:02d}:{:02d},'.format(int(total_min), int((total_min % 1) * 60))
 
         if result != '':
             send_socket_server(result)
@@ -79,10 +99,10 @@ def _monitor_yolo_detection(detector, min_gap, min_detection_count=3):
         print(detection_diff)
         result = ''
         for item in detection_diff:
-            if detection_diff[item] <= -min_detection_count:
-                # result += f'UNDETECT|{item},'
-                result += f'INSTRUCT|,'
-            elif detection_diff[item] >= min_detection_count:
+            # if detection_diff[item] <= -min_detection_count:
+            #     # result += f'UNDETECT|{item},'
+            #     result += f'INSTRUCT|,'
+            if detection_diff[item] >= min_detection_count:
                 result += f'INSTRUCT|{item},'
             
         if result != '':
