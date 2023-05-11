@@ -11,9 +11,10 @@ SERVER_PORT = 8090
 _CONNECTIONS = set()
 _rx_queue = Queue()
 
-# references: https://websockets.readthedocs.io/en/stable/reference/server.html , https://pypi.org/project/websockets/ 
+
+# references: https://websockets.readthedocs.io/en/stable/reference/server.html , https://pypi.org/project/websockets/
 async def ws_echo(websocket):
-    global _rx_queue
+    global _rx_queue, _CONNECTIONS
 
     _CONNECTIONS.add(websocket)
     try:
@@ -47,14 +48,24 @@ async def main():
 def start_server():
     asyncio.run(main())
 
+
 def stop_server():
     pass
-    
+
 
 async def send_data_to_websockets(data):
+    global _CONNECTIONS
+
+    exclude_list = set()
     for _websocket in _CONNECTIONS:
-        await _websocket.send(data)
+        try:
+            await _websocket.send(data)
+        except Exception:
+            traceback.print_exc(file=sys.stdout)
+            exclude_list.add(_websocket)
+
     print(f'Sent data: {data}')
+    _CONNECTIONS -= exclude_list
 
 
 def send_data(data):
@@ -73,6 +84,7 @@ def receive_data():
 
 
 server_thread = None
+
 
 def start_server_threaded():
     global server_thread

@@ -21,6 +21,9 @@ def send_socket_server(data):
 def get_socket_data():
     return socket_server.receive_data()
 
+
+
+
 def start_wearos():
     global flag_is_running
 
@@ -28,7 +31,11 @@ def start_wearos():
     distance = 0
     time = ""
 
-    start_time = time_utility.get_current_millis();
+    start_time = time_utility.get_current_millis()
+    start_time_string = time_utility.get_date_string("%Y %B %d %I:%M %p")
+    start_place = 'NUS'
+
+
 
     while flag_is_running:
         result = ''
@@ -42,13 +49,17 @@ def start_wearos():
         time = time_utility.get_time_string("%I:%M %p")
         result += f'TIME|{time},'
 
-        total_min = (time_utility.get_current_millis() - start_time) / (1000*60)
+        total_sec = (time_utility.get_current_millis() - start_time) / 1000
+        total_min = total_sec / 60
         speed = total_min / distance
         result += f'SPEED|{round(speed, 2)} min/km,'
 
+        # directions
+        result += get_directions(total_sec)
+
         socket_data = get_socket_data()
         if "REQUEST_RUNNING_SUMMARY" == socket_data:
-            result += f'DETAILS| Evening run,'
+            result += f'DETAILS| Evening run at {start_place}, {start_time_string},'
             result += f'AVG_SPEED|{round(speed, 2)} min/km,'
             result += f'TOT_DISTANCE|{round(distance, 2)} km,'
             result += 'TOT_TIME|{:02d}:{:02d},'.format(int(total_min), int((total_min % 1) * 60))
@@ -61,6 +72,34 @@ def start_wearos():
 
         time_utility.sleep_seconds(1)
 
+last_update_time = 0
+next_reset_time = 0
+reset_direction = False
+def get_directions(total_sec):
+    global last_update_time, next_reset_time, reset_direction
+
+    directions = ''
+
+    if total_sec > last_update_time + 10:
+        rand_dir = random.randint(1, 3)
+        if rand_dir == 1:
+            directions = 'ANGLE|0,INSTRUCT|Turn Left,'
+        elif rand_dir == 2:
+            directions = 'ANGLE|90,INSTRUCT|Go Strait,'
+        elif rand_dir == 3:
+            directions = 'ANGLE|180,INSTRUCT|Turn Right,'
+        else:
+            directions = ''
+
+        last_update_time = total_sec
+        reset_direction = False
+        next_reset_time = last_update_time + 3
+
+    if total_sec > next_reset_time and not reset_direction:
+        directions = 'ANGLE|-1,INSTRUCT|,'
+        reset_direction = True
+
+    return directions
 
 def start_wearos_threaded():
     server_thread = threading.Thread(target=start_wearos, daemon=True)
