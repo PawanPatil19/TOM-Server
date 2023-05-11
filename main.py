@@ -59,7 +59,7 @@ def start_wearos():
 
         socket_data = get_socket_data()
         if "REQUEST_RUNNING_SUMMARY" == socket_data:
-            result += f'DETAILS| Evening run at {start_place}, {start_time_string},'
+            result += f'DETAILS| Evening run at {start_place} {start_time_string},'
             result += f'AVG_SPEED|{round(speed, 2)} min/km,'
             result += f'TOT_DISTANCE|{round(distance, 2)} km,'
             result += 'TOT_TIME|{:02d}:{:02d},'.format(int(total_min), int((total_min % 1) * 60))
@@ -80,7 +80,7 @@ def get_directions(total_sec):
 
     directions = ''
 
-    if total_sec > last_update_time + 10:
+    if total_sec > last_update_time + 25:
         rand_dir = random.randint(1, 3)
         if rand_dir == 1:
             directions = 'ANGLE|0,INSTRUCT|Turn Left,'
