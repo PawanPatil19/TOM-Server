@@ -32,7 +32,7 @@ def start_wearos():
     time = ""
 
     start_time = time_utility.get_current_millis()
-    start_time_string = time_utility.get_date_string("%Y %B %d %I:%M %p")
+    start_time_string = time_utility.get_date_string("%d %B %I:%M %p")
     start_place = 'NUS'
 
 
@@ -59,7 +59,7 @@ def start_wearos():
 
         socket_data = get_socket_data()
         if "REQUEST_RUNNING_SUMMARY" == socket_data:
-            result += f'DETAILS| Evening run at {start_place} {start_time_string},'
+            result += f'DETAILS| Evening run at {start_place} on {start_time_string},'
             result += f'AVG_SPEED|{round(speed, 2)} min/km,'
             result += f'TOT_DISTANCE|{round(distance, 2)} km,'
             result += 'TOT_TIME|{:02d}:{:02d},'.format(int(total_min), int((total_min % 1) * 60))
