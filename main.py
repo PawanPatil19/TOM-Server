@@ -156,7 +156,7 @@ def start_yolo(video_src):
     global flag_is_running
 
     try:
-        with YoloDetector(video_src, min_time=1) as yoloDetector:
+        with YoloDetector(video_src, min_time=1, save = False) as yoloDetector:
             threading.Thread(target=_monitor_yolo_detection, args=(yoloDetector, 1,), daemon=True).start()
             yoloDetector.start()
     except KeyboardInterrupt:
