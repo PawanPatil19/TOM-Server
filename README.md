@@ -26,13 +26,8 @@ A server for TOM
 - install `conda` (e.g., [Anaconda](https://docs.anaconda.com/anaconda/install/)/[Miniconda](https://docs.conda.io/en/latest/miniconda.html))
 - create new conda environment `tom1` using `conda env create -f environment-cpu.yml`
 - activate `tom1` environment, `conda activate tom1`
-- create a file `config/fitbit_credential.json` with Fitbit credentials (Note: json format must be correct)
-```json
-{
-"client_id": "XXXXX",
-"client_secret": "YYYYYYYYYYYY"
-}
-```
+- create a file `config/fitbit_credential.json` with Fitbit credentials such as `{"client_id": "ID","client_secret": "SECRET"}` (Note: json format must be correct) 
+- create a file `config/google_credential.json` with Google credentials such as `{"map_api_key": "KEY"}` (Note: json format must be correct)
 - [Configure](https://docs.microsoft.com/en-us/windows/mixed-reality/develop/platform-capabilities-and-apis/using-the-windows-device-portal) the Hololens Device Portal. Save [your user credentials](https://docs.microsoft.com/en-us/windows/mixed-reality/develop/platform-capabilities-and-apis/using-the-windows-device-portal#creating-a-username-and-password) to `modules/hololens/hololens_config.py`
 
 
@@ -71,6 +66,7 @@ python save_model.py --weights detector/data/custom.weights --output detector/ch
 
 ## Third-party libraries
 - [python-fitbit](https://github.com/orcasgit/python-fitbit)
+- [google-maps](https://developers.google.com/maps/documentation/maps-static/start)
 - [Hololens YOLOv4 Object Detection](https://github.com/Interactions-HSG/21-MT-JanickSpirig-HoloLens-ObjectDetection) from [tensorflow-yolov4-tflite](https://github.com/theAIGuysCode/tensorflow-yolov4-tflite)
 
 

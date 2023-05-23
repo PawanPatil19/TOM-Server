@@ -10,6 +10,8 @@ import modules.websocket_server.socket_server as socket_server
 from modules.yolov4.VideoCapture import VideoCapture as YoloDetector
 import modules.hololens.hololens_portal as hololens_portal
 
+import modules.google_api.google_api as google_api
+
 flag_is_running = False
 
 
@@ -59,10 +61,13 @@ def start_wearos():
 
         socket_data = get_socket_data()
         if "REQUEST_RUNNING_SUMMARY" == socket_data:
-            result += f'DETAILS| Evening run at {start_place} on {start_time_string},'
+            result += f'DETAILS| Morning Run at {start_place} on {start_time_string},'
             result += f'AVG_SPEED|{round(speed, 2)} min/km,'
             result += f'TOT_DISTANCE|{round(distance, 2)} km,'
             result += 'TOT_TIME|{:02d}:{:02d},'.format(int(total_min), int((total_min % 1) * 60))
+
+        if "REQUEST_GOOGLE_MAP_API_KEY" == socket_data:
+            result += f'GOOGLE_MAP_API_KEY|{google_api.get_google_credential(google_api.KEY_MAP_API)},'
 
         if result != '':
             send_socket_server(result)

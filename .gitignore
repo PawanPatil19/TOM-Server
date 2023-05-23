@@ -3,6 +3,8 @@
 # fitbit
 fitbit_credential.json
 fitbit_token.json
+# google
+google_credential.json
 
 # yolo
 **/checkpoints/
