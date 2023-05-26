@@ -3,8 +3,13 @@
 ### main
 - description
 
-### dev/running_coach_demo3
+### dev/running_coach_demo4
+- add YOLOv8 support
+- remove YOLOv4
 - add support for WearOS devices to read sensor data via network
+
+### dev/running_coach_demo3
+- use WearOS mock for testing
 - fix issue with websocket communication
 
 ### dev/running_coach_demo2

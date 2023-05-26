@@ -12,6 +12,9 @@ google_credential.json
 **/detector_yolov3/
 yolo_video_output.avi
 
+modules/yolov8/weights/*
+*.pt
+
 # System Files
 .DS_Store
 **.DS_Store

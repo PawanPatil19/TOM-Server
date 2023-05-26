@@ -11,7 +11,7 @@ class  VideoDetection:
             video_path = 0, 
             save_path = "yolo_video_output.avi",
             inference = True,
-            model = "yolov8n.pt",
+            model = "./modules/yolov8/weights/model.pt",
             save = False):
         self.videoPath = video_path
         self.savePath = save_path
@@ -90,7 +90,7 @@ class  VideoDetection:
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
         # specify the model
-        model = YOLO("./modules/yolov8/runs/detect/train/weights/best.pt")
+        model = YOLO(self.model)
 
         # customize the bounding box
         box_annotator = sv.BoxAnnotator(

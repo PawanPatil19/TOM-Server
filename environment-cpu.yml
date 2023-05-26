@@ -26,3 +26,4 @@ dependencies:
       - easydict
       - pillow
       - ultralytics==8.0.*
+      - supervision==0.8.*
