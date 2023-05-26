@@ -7,7 +7,7 @@ import random
 import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
 
-from modules.yolov4.VideoCapture import VideoCapture as YoloDetector
+from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
 import modules.hololens.hololens_portal as hololens_portal
 
 import modules.google_api.google_api as google_api
@@ -161,7 +161,7 @@ def start_yolo(video_src):
     global flag_is_running
 
     try:
-        with YoloDetector(video_src, min_time=1, save = False) as yoloDetector:
+        with YoloDetector(video_src, save = False) as yoloDetector:
             threading.Thread(target=_monitor_yolo_detection, args=(yoloDetector, 1,), daemon=True).start()
             yoloDetector.start()
     except KeyboardInterrupt:

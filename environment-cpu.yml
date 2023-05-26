@@ -1,16 +1,16 @@
-﻿name: tom1
+﻿name: tom
 channels:
   - defaults
   - menpo
   - conda-forge
   - postelrich
 dependencies:
-  - python=3.7
+  - python=3.9
   - pip
   - pip:
       - numpy
       - pandas
-      - opencv-python==4.1.*
+      - opencv-python
       - ffmpeg==1.4.*
       - ffmpeg-python==0.2.*
       - python-vlc==3.0.*
@@ -26,3 +26,5 @@ dependencies:
       - absl-py
       - easydict
       - pillow
+      - supervison
+      - ultralytics
