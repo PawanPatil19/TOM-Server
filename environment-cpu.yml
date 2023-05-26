@@ -8,23 +8,21 @@ dependencies:
   - python=3.9
   - pip
   - pip:
-      - numpy
-      - pandas
-      - opencv-python
+      - numpy==1.24.*
+      - pandas==2.0.*
+      - opencv-python==4.7.*
       - ffmpeg==1.4.*
       - ffmpeg-python==0.2.*
       - python-vlc==3.0.*
       - cherrypy==18.8.*
       - pynput==1.7.*
       - pytest==7.1.*
-      - git+https://github.com/orcasgit/python-fitbit.git
+      - fitbit==0.3.*
       - websockets==10.4.*
-      - tensorflow==2.3.0
       - matplotlib
       - lxml
       - tqdm
       - absl-py
       - easydict
       - pillow
-      - supervison
-      - ultralytics
+      - ultralytics==8.0.*
