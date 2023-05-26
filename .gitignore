@@ -13,7 +13,9 @@ google_credential.json
 yolo_video_output.avi
 
 modules/yolov8/weights/*
+**/runs/
 *.pt
+datasets/
 
 # System Files
 .DS_Store
