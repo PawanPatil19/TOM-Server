@@ -2,8 +2,8 @@ import cv2
 import supervision as sv
 from ultralytics import YOLO
 import time
-import sys
 
+from ObjectDetectionCounter import ObjectDetectionCounter
 
 class VideoDetection:
     def __init__(
@@ -14,6 +14,7 @@ class VideoDetection:
             model="./modules/yolov8/weights/model.pt",
             save=False,
             save_path="yolo_video_output.avi",
+            object_counter_duration = 1, # set object detection counter duration
     ):
         self.videoPath = video_path
         self.inference = inference
@@ -25,6 +26,13 @@ class VideoDetection:
         self.save = save
         self.savePath = save_path
         self.capture = None
+        self.last_detection = None
+
+        if object_counter_duration > 0:
+            self.object_detection_counter = ObjectDetectionCounter(object_counter_duration)
+        else:
+            self.object_detection_counter = None
+
 
         print("VideoCapture::__init__()")
         print("OpenCV Version : %s" % (cv2.__version__))
@@ -49,6 +57,13 @@ class VideoDetection:
     def __enter__(self):
         self.set_video_source(self.videoPath)
         return self
+
+
+    def get_detect_object_percentage(self):
+        if self.object_detection_counter:
+            return  self.object_detection_counter.get_detected_object_percentage()
+
+        return None
 
     def set_video_source(self, new_video_path):
         if self.captureInProgress:
@@ -116,7 +131,7 @@ class VideoDetection:
         while True:
             ret, frame = self.capture.read()
             #  iou=0.45, max_det=50, verbose=False
-            result = model(frame, agnostic_nms=True, conf=self.confidenceLevel)[0]
+            result = model(frame, agnostic_nms=True, conf=self.confidenceLevel, verbose=False)[0]
             # [[bounding_boxes, mask, confidence, class_id, tracker_id]
             detections = sv.Detections.from_yolov8(result)
 
@@ -134,6 +149,11 @@ class VideoDetection:
                 labels=labels
             )
 
+            if self.object_detection_counter:
+                self.object_detection_counter.infer_counting(detection_results)
+
+            self.last_detection = detection_results
+
             if self.save:
                 writer.write(frame)
 
@@ -145,6 +165,9 @@ class VideoDetection:
         if self.save:
             writer.release()
 
+    def get_last_detection(self):
+        return self.last_detection
+
     def __exit__(self, exception_type, exception_value, traceback):
         # self.imageServer.close()
 
@@ -152,3 +175,5 @@ class VideoDetection:
             self.capture.release()
 
         cv2.destroyAllWindows()
+
+

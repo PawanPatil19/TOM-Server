@@ -1,8 +1,6 @@
 ﻿import threading
-import traceback
-import sys
-from collections import Counter
 import random
+from collections import Counter
 
 import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
@@ -24,8 +22,6 @@ def get_socket_data():
     return socket_server.receive_data()
 
 
-
-
 def start_wearos():
     global flag_is_running
 
@@ -37,15 +33,13 @@ def start_wearos():
     start_time_string = time_utility.get_date_string("%d %B %I:%M %p")
     start_place = 'NUS'
 
-
-
     while flag_is_running:
         result = ''
 
         distance += (random.randint(1, 5) / 1000)
         result += f'DISTANCE|{round(distance, 2)} km,'
 
-        heart_rate = random.randint(70,80)
+        heart_rate = random.randint(70, 80)
         result += f'HR|{heart_rate} BPM,'
 
         time = time_utility.get_time_string("%I:%M %p")
@@ -77,9 +71,12 @@ def start_wearos():
 
         time_utility.sleep_seconds(1)
 
+
 last_update_time = 0
 next_reset_time = 0
 reset_direction = False
+
+
 def get_directions(total_sec):
     global last_update_time, next_reset_time, reset_direction
 
@@ -106,6 +103,7 @@ def get_directions(total_sec):
 
     return directions
 
+
 def start_wearos_threaded():
     server_thread = threading.Thread(target=start_wearos, daemon=True)
     server_thread.start()
@@ -126,43 +124,46 @@ def start_timer_threaded():
     threading.Thread(target=start_timer, daemon=True).start()
 
 
-def _monitor_yolo_detection(detector, min_gap, min_detection_count=3):
+def _monitor_yolo_detection(detector, min_detection_count_percentage=0.6, update_gap = 1):
     global flag_is_running
 
     detection_init = Counter()
 
     while flag_is_running:
-        detections = detector.get_detected_objects()
-        # print(f'Detected: {detections}')
-        # TODO: multiple detection
-        filtered_detections = [j for sub in detections for j in sub if j != 'NaN']
-        detection_now = Counter(filtered_detections)
+        detections = detector.get_detect_object_percentage()
+
+        detected_objects = [key for key, value in detections.items() if value > min_detection_count_percentage]
+
+        detection_now = Counter(detected_objects)
         detection_diff = Counter(detection_now)
         detection_diff.subtract(detection_init)
 
         print(detection_diff)
+
         result = ''
+
         for item in detection_diff:
-            # if detection_diff[item] <= -min_detection_count:
+            # if detection_diff[item] <= -1:
             #     # result += f'UNDETECT|{item},'
             #     result += f'INSTRUCT|,'
-            if detection_diff[item] >= min_detection_count:
+            if detection_diff[item] >= 1:
                 result += f'INSTRUCT|{item},'
-            
+
         if result != '':
             send_socket_server(result)
 
         detection_init = detection_now
-
-        time_utility.sleep_seconds(min_gap)
+        #
+        time_utility.sleep_seconds(update_gap)
 
 
 def start_yolo(video_src):
     global flag_is_running
 
     try:
-        with YoloDetector(video_src, save = False) as yoloDetector:
-            threading.Thread(target=_monitor_yolo_detection, args=(yoloDetector, 1,), daemon=True).start()
+        with YoloDetector(video_src, save=False) as yoloDetector:
+            threading.Thread(target=_monitor_yolo_detection, args=(yoloDetector, 0.6,),
+                             daemon=True).start()
             yoloDetector.start()
     except KeyboardInterrupt:
         print("Yolo module stopped")
@@ -184,7 +185,7 @@ def run(wearos=False, hololens=False):
     else:
         start_yolo(0)
     # time_utility.sleep_seconds(10)
-    
+
     socket_server.stop_server_threaded()
 
 
