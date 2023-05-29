@@ -4,6 +4,7 @@ from ultralytics import YOLO
 import time
 
 from ObjectDetectionCounter import ObjectDetectionCounter
+from VideoStream import VideoStream
 
 class VideoDetection:
     def __init__(
@@ -26,6 +27,7 @@ class VideoDetection:
         self.save = save
         self.savePath = save_path
         self.capture = None
+        self.stream = None
         self.last_detection = None
 
         if object_counter_duration > 0:
@@ -66,12 +68,17 @@ class VideoDetection:
         return None
 
     def set_video_source(self, new_video_path):
+        print("Video Path: " + str(new_video_path))
+
         if self.captureInProgress:
             self.captureInProgress = False
 
         if self.capture:
             self.capture.release()
             self.capture = None
+        elif self.stream:
+            self.stream.stop()
+            self.stream = None
 
         self.videoPath = new_video_path
         self.useWebcam = self.__IsCaptureDev(new_video_path)
@@ -79,17 +86,18 @@ class VideoDetection:
 
         if self.useWebcam:
             print("   - Using webcam")
+            self.capture = cv2.VideoCapture(new_video_path)
+            if self.capture.isOpened():
+                self.captureInProgress = True
         elif self.useStream:
             print("   - Using stream")
+            self.stream = VideoStream(new_video_path).start()
+            time.sleep(1.0) # wait until loading at least one frame
+            self.captureInProgress = True
         else:
             print("   - Using video file")
 
-        print("Video Path: " + str(self.videoPath))
-
-        self.capture = cv2.VideoCapture(self.videoPath)
-        if self.capture.isOpened():
-            self.captureInProgress = True
-        else:
+        if not self.captureInProgress:
             print("\nWARNING : Failed to Open Video Source\n")
 
     def start(self):
@@ -98,14 +106,19 @@ class VideoDetection:
                 self.__Run__()
 
             if not self.captureInProgress:
-                time.sleep(0.1)
+                time.sleep(1.0)
 
     def __Run__(self):
         print("VideoCapture::__Run__()")
 
-        camera_fps = int(self.capture.get(cv2.CAP_PROP_FPS))
-        frame_width = int(self.capture.get(cv2.CAP_PROP_FRAME_WIDTH))
-        frame_height = int(self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        if self.useStream:
+            camera_fps = int(self.stream.stream.get(cv2.CAP_PROP_FPS))
+            frame_width = int(self.stream.stream.get(cv2.CAP_PROP_FRAME_WIDTH))
+            frame_height = int(self.stream.stream.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        elif self.useWebcam:
+            camera_fps = int(self.capture.get(cv2.CAP_PROP_FPS))
+            frame_width = int(self.capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+            frame_height = int(self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         if camera_fps == 0:
             print("Error : Could not get FPS")
@@ -129,7 +142,18 @@ class VideoDetection:
         )
 
         while True:
-            ret, frame = self.capture.read()
+            if not self.captureInProgress:
+                break
+
+            try:
+                if self.useStream:
+                    frame = self.stream.read()
+                else:
+                    frame = self.capture.read()[1]
+            except Exception as e:
+                print("ERROR : Exception during capturing")
+                raise(e)
+
             #  iou=0.45, max_det=50, verbose=False
             result = model(frame, agnostic_nms=True, conf=self.confidenceLevel, verbose=False)[0]
             # [[bounding_boxes, mask, confidence, class_id, tracker_id]
@@ -159,7 +183,7 @@ class VideoDetection:
 
             cv2.imshow("YOLOv8", frame)
 
-            if cv2.waitKey(30) == 27:  # break with escape key
+            if cv2.waitKey(10) & 0xFF == ord('q'):  # break with q key
                 break
 
         if self.save:
@@ -169,10 +193,12 @@ class VideoDetection:
         return self.last_detection
 
     def __exit__(self, exception_type, exception_value, traceback):
-        # self.imageServer.close()
 
         if self.capture:
             self.capture.release()
+
+        if self.stream:
+            self.stream.stop()
 
         cv2.destroyAllWindows()
 
