@@ -162,7 +162,7 @@ def start_yolo(video_src):
 
     try:
         with YoloDetector(video_src, save=False) as yoloDetector:
-            threading.Thread(target=_monitor_yolo_detection, args=(yoloDetector, 0.6,),
+            threading.Thread(target=_monitor_yolo_detection, args=(yoloDetector, 0.6, 1,),
                              daemon=True).start()
             yoloDetector.start()
     except KeyboardInterrupt:
