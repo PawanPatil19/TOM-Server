@@ -27,3 +27,4 @@ dependencies:
       - pillow
       - ultralytics==8.0.*
       - supervision==0.8.*
+      - protobuf==4.23.*
