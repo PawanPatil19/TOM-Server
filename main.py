@@ -62,7 +62,9 @@ def start_wearos(real_wearos):
             exercise_data = get_decoded_wearos_data(socket_data)
 
             if exercise_data is not None:
-                speed = 1000 / (60 * exercise_data.speed_avg)  # min/km
+                speed = 0
+                if (exercise_data.speed_avg > 0):
+                    speed = 1000 / (60 * exercise_data.speed_avg)  # min/km
                 distance = exercise_data.distance / 1000  # km
 
                 # send the data back to Unity client
