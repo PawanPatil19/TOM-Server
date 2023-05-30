@@ -1,14 +1,14 @@
-﻿import threading
-import random
+﻿import random
+import threading
 from collections import Counter
-
-import modules.utilities.time as time_utility
-import modules.websocket_server.socket_server as socket_server
-
-from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
-import modules.hololens.hololens_portal as hololens_portal
+from google.protobuf.message import DecodeError
 
 import modules.google_api.google_api as google_api
+import modules.hololens.hololens_portal as hololens_portal
+import modules.utilities.time as time_utility
+import modules.websocket_server.socket_server as socket_server
+from modules.dataformat import exerciseData_pb2
+from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
 
 flag_is_running = False
 
@@ -22,7 +22,7 @@ def get_socket_data():
     return socket_server.receive_data()
 
 
-def start_wearos():
+def start_wearos(real_wearos):
     global flag_is_running
 
     heart_rate = 0
@@ -36,24 +36,41 @@ def start_wearos():
     while flag_is_running:
         result = ''
 
-        distance += (random.randint(1, 5) / 1000)
-        result += f'DISTANCE|{round(distance, 2)} km,'
-
-        heart_rate = random.randint(70, 80)
-        result += f'HR|{heart_rate} BPM,'
-
-        time = time_utility.get_time_string("%I:%M %p")
-        result += f'TIME|{time},'
-
         total_sec = (time_utility.get_current_millis() - start_time) / 1000
         total_min = total_sec / 60
-        speed = total_min / distance
-        result += f'SPEED|{round(speed, 2)} min/km,'
 
-        # directions
-        result += get_directions(total_sec)
-
+        # receive data from Unity or WearOS client
         socket_data = get_socket_data()
+
+        # mock service
+        if not real_wearos:
+            distance += (random.randint(1, 5) / 1000)
+            result += f'DISTANCE|{round(distance, 2)} km,'
+
+            heart_rate = random.randint(70, 80)
+            result += f'HR|{heart_rate} BPM,'
+
+            time = time_utility.get_time_string("%I:%M %p")
+            result += f'TIME|{time},'
+
+            speed = total_min / distance
+            result += f'SPEED|{round(speed, 2)} min/km,'
+
+            # directions
+            result += get_directions(total_sec)
+        else:
+            exercise_data = get_decoded_wearos_data(socket_data)
+
+            if exercise_data is not None:
+                speed = 1000 / (60 * exercise_data.speed_avg)  # min/km
+                distance = exercise_data.distance / 1000  # km
+
+                # send the data back to Unity client
+                send_socket_server(socket_data)
+            else:
+                speed = 0
+                distance = 0
+
         if "REQUEST_RUNNING_SUMMARY" == socket_data:
             result += f'DETAILS| Morning Run at {start_place} on {start_time_string},'
             result += f'AVG_SPEED|{round(speed, 2)} min/km,'
@@ -66,10 +83,25 @@ def start_wearos():
         if result != '':
             send_socket_server(result)
 
-            # utilities.send_get_request(f'http://127.0.0.1:5050/?HR: {last_row_val}=1')
-            # curl -X POST -d "" http://127.0.0.1:5050/?Hello=1
+        # utilities.send_get_request(f'http://127.0.0.1:5050/?HR: {last_row_val}=1')
+        # curl -X POST -d "" http://127.0.0.1:5050/?Hello=1
 
         time_utility.sleep_seconds(1)
+
+
+def get_decoded_wearos_data(socket_data):
+    if socket_data is None or isinstance(socket_data, str):
+        return None
+
+    try:
+        # Attempt to parse the received data as ExerciseData protobuf message
+        exercise_data = exerciseData_pb2.ExerciseData()
+        exercise_data.ParseFromString(socket_data)
+
+        return exercise_data
+    except DecodeError:
+        # Not a valid ExerciseData protobuf message
+        return None
 
 
 last_update_time = 0
@@ -104,8 +136,8 @@ def get_directions(total_sec):
     return directions
 
 
-def start_wearos_threaded():
-    server_thread = threading.Thread(target=start_wearos, daemon=True)
+def start_wearos_threaded(wearos_real):
+    server_thread = threading.Thread(target=start_wearos, args=(wearos_real,), daemon=True)
     server_thread.start()
 
 
@@ -124,7 +156,7 @@ def start_timer_threaded():
     threading.Thread(target=start_timer, daemon=True).start()
 
 
-def _monitor_yolo_detection(detector, min_detection_count_percentage=0.6, update_gap = 1):
+def _monitor_yolo_detection(detector, min_detection_count_percentage=0.6, update_gap=1):
     global flag_is_running
 
     detection_init = Counter()
@@ -132,7 +164,8 @@ def _monitor_yolo_detection(detector, min_detection_count_percentage=0.6, update
     while flag_is_running:
         detections = detector.get_detect_object_percentage()
 
-        detected_objects = [key for key, value in detections.items() if value > min_detection_count_percentage]
+        detected_objects = [key for key, value in detections.items() if
+                            value > min_detection_count_percentage]
 
         detection_now = Counter(detected_objects)
         detection_diff = Counter(detection_now)
@@ -144,7 +177,6 @@ def _monitor_yolo_detection(detector, min_detection_count_percentage=0.6, update
 
         for item in detection_diff:
             # if detection_diff[item] <= -1:
-            #     # result += f'UNDETECT|{item},'
             #     result += f'INSTRUCT|,'
             if detection_diff[item] >= 1:
                 result += f'INSTRUCT|{item},'
@@ -169,7 +201,7 @@ def start_yolo(video_src):
         print("Yolo module stopped")
 
 
-def run(wearos=False, hololens=False):
+def run(wearos_real=False, hololens_real=False):
     global flag_is_running
 
     flag_is_running = True
@@ -177,19 +209,14 @@ def run(wearos=False, hololens=False):
 
     start_timer_threaded()
 
-    if wearos:
-        start_wearos_threaded()
+    start_wearos_threaded(wearos_real)
 
-    if hololens:
-        start_yolo(hololens_portal.API_STREAM_VIDEO)
-    else:
-        start_yolo(0)
-    # time_utility.sleep_seconds(10)
+    start_yolo(hololens_portal.API_STREAM_VIDEO if hololens_real else 0)
 
     socket_server.stop_server_threaded()
 
 
-_hololens = input("Hololens (e.g., 0/1)?")
-_wearos = input("Wearos (e.g., 0/1)?")
+_hololens = input("Hololens Real (e.g., 0/1)?")
+_wearos = input("WearOS Real (e.g., 0/1)?")
 
 run(_wearos == "1", _hololens == "1")
