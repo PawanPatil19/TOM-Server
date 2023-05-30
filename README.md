@@ -36,6 +36,11 @@ A server for TOM
 - run `main.py` (e.g., `python main.py`)
 - for tests, run `pytest` (or `pytest tests\...\yy.py`)
 
+## Protobuf
+- Install protobuf using `pip install protobuf`.
+- Ensure you have `protoc` installed by typing `protoc --version` in your terminal. If it is not installed, you may follow the instructions [here](https://github.com/protocolbuffers/protobuf#protocol-compiler-installation).
+- Create your proto file in `modules/dataformat`. For more information on how to structure proto data, please refer [here](https://protobuf.dev/getting-started/pythontutorial/).
+- `cd` to `modules` and run this command in your terminal `protoc -I=dataformat --python_out=dataformat dataformat/proto_name.proto` to generate the builder class. Note that you have to run the command again if you edit the proto file.
 
 ## References
 - [Structuring Your Project](https://docs.python-guide.org/writing/structure/)
