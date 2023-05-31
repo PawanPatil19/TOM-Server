@@ -7,7 +7,7 @@ import modules.google_api.google_api as google_api
 import modules.hololens.hololens_portal as hololens_portal
 import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
-from modules.dataformat import exerciseData_pb2
+from modules.dataformat import exercise_data_pb2
 from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
 
 flag_is_running = False
@@ -96,13 +96,13 @@ def get_decoded_wearos_data(socket_data):
         return None
 
     try:
-        # Attempt to parse the received data as ExerciseData protobuf message
-        exercise_data = exerciseData_pb2.ExerciseData()
+        # Attempt to parse the received data as exercise_data protobuf message
+        exercise_data = exercise_data_pb2.ExerciseData()
         exercise_data.ParseFromString(socket_data)
 
         return exercise_data
     except DecodeError:
-        # Not a valid ExerciseData protobuf message
+        # Not a valid exercise_data protobuf message
         return None
 
 
