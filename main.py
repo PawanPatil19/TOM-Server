@@ -68,25 +68,6 @@ def start_wearos(real_wearos):
                     speed = 1000 / (60 * exercise_data.speed_avg)  # min/km
                 distance = exercise_data.distance / 1000  # km
 
-                start_time = exercise_data.start_time
-                update_time = exercise_data.update_time
-                duration = exercise_data.duration
-                latitude = exercise_data.latitude
-                longitude = exercise_data.longitude
-                distance = exercise_data.distance
-                calories = exercise_data.calories
-                heart_rate = exercise_data.heart_rate
-                heart_rate_avg = exercise_data.heart_rate_avg
-                speed = exercise_data.speed
-                speed_avg = exercise_data.speed_avg
-                exercise_type = exercise_data.exercise_type
-
-                print(
-                f'Received data: \n Start Time:{start_time} \n Update Time:{update_time} \n '
-                f'Duration:{duration} \n Latitude:{latitude} \n Longitude:{longitude} \n Distance:{distance} \n '
-                f'Calories:{calories} \n Heart Rate:{heart_rate} \n Heart Rate Avg:{heart_rate_avg} \n Speed:{speed} '
-                f'\n Speed Avg:{speed_avg} \n Exercise Type:{exercise_type} \n ')
-
                 # send the data back to Unity client
                 send_socket_server(socket_data)
             else:
