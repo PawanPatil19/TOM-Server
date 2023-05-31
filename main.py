@@ -8,6 +8,7 @@ import modules.hololens.hololens_portal as hololens_portal
 import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
 from modules.dataformat import exercise_data_pb2
+from modules.dataformat import socket_data_pb2
 from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
 
 flag_is_running = False
@@ -67,6 +68,25 @@ def start_wearos(real_wearos):
                     speed = 1000 / (60 * exercise_data.speed_avg)  # min/km
                 distance = exercise_data.distance / 1000  # km
 
+                start_time = exercise_data.start_time
+                update_time = exercise_data.update_time
+                duration = exercise_data.duration
+                latitude = exercise_data.latitude
+                longitude = exercise_data.longitude
+                distance = exercise_data.distance
+                calories = exercise_data.calories
+                heart_rate = exercise_data.heart_rate
+                heart_rate_avg = exercise_data.heart_rate_avg
+                speed = exercise_data.speed
+                speed_avg = exercise_data.speed_avg
+                exercise_type = exercise_data.exercise_type
+
+                print(
+                f'Received data: \n Start Time:{start_time} \n Update Time:{update_time} \n '
+                f'Duration:{duration} \n Latitude:{latitude} \n Longitude:{longitude} \n Distance:{distance} \n '
+                f'Calories:{calories} \n Heart Rate:{heart_rate} \n Heart Rate Avg:{heart_rate_avg} \n Speed:{speed} '
+                f'\n Speed Avg:{speed_avg} \n Exercise Type:{exercise_type} \n ')
+
                 # send the data back to Unity client
                 send_socket_server(socket_data)
             else:
@@ -96,13 +116,28 @@ def get_decoded_wearos_data(socket_data):
         return None
 
     try:
-        # Attempt to parse the received data as exercise_data protobuf message
-        exercise_data = exercise_data_pb2.ExerciseData()
-        exercise_data.ParseFromString(socket_data)
+        # Attempt to parse the received data as socket_data protobuf 
+        socket_data_msg = socket_data_pb2.SocketData()
+        socket_data_msg.ParseFromString(socket_data)
 
-        return exercise_data
+        data_type = socket_data_msg.data_type
+        data = socket_data_msg.data
+
+        # Check if data received is exercise_data protobuf type
+        if data_type == "EXERCISE_DATA":
+            try:
+                exercise_data = exercise_data_pb2.ExerciseData()
+                exercise_data.ParseFromString(data)
+
+                return exercise_data
+            except DecodeError:
+                # Not a valid exercise_data protobuf message
+                return None
+        else:
+            # Not an exercise_data protobuf message
+            return None
     except DecodeError:
-        # Not a valid exercise_data protobuf message
+        # Not a valid socket_data protobuf message
         return None
 
 
