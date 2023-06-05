@@ -9,6 +9,7 @@ import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
 from modules.dataformat import exercise_data_pb2
 from modules.dataformat import socket_data_pb2
+from modules.dataformat.data_types import DataTypes
 from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
 
 flag_is_running = False
@@ -105,7 +106,7 @@ def get_decoded_wearos_data(socket_data):
         data = socket_data_msg.data
 
         # Check if data received is exercise_data protobuf type
-        if data_type == "EXERCISE_DATA":
+        if data_type == DataTypes.EXERCISE_DATA:
             try:
                 exercise_data = exercise_data_pb2.ExerciseData()
                 exercise_data.ParseFromString(data)
