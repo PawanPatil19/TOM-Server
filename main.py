@@ -72,6 +72,7 @@ def start_wearos(real_wearos):
                 src_lng = random.uniform(-180, 180)
             dest_lat = random.uniform(-90, 90)
             dest_lng = random.uniform(-180, 180)
+            send_exercise_client_data_to_unity(curr_distance, int(curr_heart_rate), avg_speed, curr_time, int(total_sec))
         else:
             exercise_sensor_data = get_decoded_wearos_data(socket_data)
 
@@ -87,18 +88,7 @@ def start_wearos(real_wearos):
                         src_lng = exercise_sensor_data.longitude
                     dest_lat = exercise_sensor_data.latitude
                     dest_lng = exercise_sensor_data.longitude
-
-
-        exercise_client_data_proto = exercise_client_data_pb2.ExerciseClientData(
-            total_distance = curr_distance,
-            curr_heart_rate = int(curr_heart_rate),
-            avg_speed = avg_speed,
-            curr_time = curr_time,
-            exercise_duration = int(total_sec),
-        )
-        exercise_client_bytes = wrap_message_with_metadata(exercise_client_data_proto, DataTypes.EXERCISE_CLIENT_DATA)
-        # send the data back to Unity client
-        send_socket_server(exercise_client_bytes)
+                send_exercise_client_data_to_unity(curr_distance, int(curr_heart_rate), avg_speed, curr_time, int(total_sec))
 
         if "REQUEST_RUNNING_SUMMARY" == socket_data:
             summary_data_proto = summary_data_pb2.SummaryData(
@@ -130,6 +120,19 @@ def start_wearos(real_wearos):
 
         time_utility.sleep_seconds(1)
 
+def send_exercise_client_data_to_unity(total_distance, curr_heart_rate, avg_speed, curr_time, exercise_duration):
+    exercise_client_data_proto = exercise_client_data_pb2.ExerciseClientData(
+        total_distance = total_distance,
+        curr_heart_rate = curr_heart_rate,
+        avg_speed = avg_speed,
+        curr_time = curr_time,
+        exercise_duration = exercise_duration,
+    )
+    exercise_client_bytes = wrap_message_with_metadata(exercise_client_data_proto, DataTypes.EXERCISE_CLIENT_DATA)
+    # send the data back to Unity client
+    send_socket_server(exercise_client_bytes)
+
+
 def wrap_message_with_metadata(data, data_type):
     socket_data = socket_data_pb2.SocketData(
         data_type = data_type,
@@ -154,7 +157,7 @@ def get_decoded_wearos_data(socket_data):
         # Check if data received is exercise_sensor_data protobuf type
         if data_type == DataTypes.EXERCISE_SENSOR_DATA:
             try:
-                exercise_sensor_data = exercise_sensor_data_pb2.ExerciseData()
+                exercise_sensor_data = exercise_sensor_data_pb2.ExerciseSensorData()
                 exercise_sensor_data.ParseFromString(data)
 
                 return exercise_sensor_data
