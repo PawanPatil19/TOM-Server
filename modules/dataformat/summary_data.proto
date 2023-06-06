@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+message SummaryData {
+  optional string details = 1;
+  optional double total_distance = 2;
+  optional double avg_speed = 3;
+  optional int32 total_duration = 4;
+  optional double src_lat = 5;
+  optional double src_lng = 6;
+  optional double dest_lat = 7;
+  optional double dest_lng = 8;
+}

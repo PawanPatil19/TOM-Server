@@ -7,8 +7,10 @@ import modules.google_api.google_api as google_api
 import modules.hololens.hololens_portal as hololens_portal
 import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
-from modules.dataformat import exercise_data_pb2
+from modules.dataformat import exercise_client_data_pb2
+from modules.dataformat import exercise_sensor_data_pb2
 from modules.dataformat import socket_data_pb2
+from modules.dataformat import summary_data_pb2
 from modules.dataformat.data_types import DataTypes
 from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
 
@@ -27,9 +29,13 @@ def get_socket_data():
 def start_wearos(real_wearos):
     global flag_is_running
 
-    heart_rate = 0
-    distance = 0
-    time = ""
+    curr_heart_rate = 0
+    curr_distance = 0.0
+    avg_speed = 0.0
+    src_lat = 0.0
+    src_lng = 0.0
+    dest_lat = 0.0
+    dest_lng = 0.0
 
     start_time = time_utility.get_current_millis()
     start_time_string = time_utility.get_date_string("%d %B %I:%M %p")
@@ -40,57 +46,97 @@ def start_wearos(real_wearos):
 
         total_sec = (time_utility.get_current_millis() - start_time) / 1000
         total_min = total_sec / 60
+        
+        curr_time = time_utility.get_current_millis()
+        # result += f'TIME|{curr_time},'
 
         # receive data from Unity or WearOS client
         socket_data = get_socket_data()
 
         # mock service
         if not real_wearos:
-            distance += (random.randint(1, 5) / 1000)
-            result += f'DISTANCE|{round(distance, 2)} km,'
+            curr_distance += (random.randint(1, 5) / 1000)
+            # result += f'DISTANCE|{round(curr_distance, 2)} km,'
 
-            heart_rate = random.randint(70, 80)
-            result += f'HR|{heart_rate} BPM,'
+            curr_heart_rate = random.randint(70, 80)
+            # result += f'HR|{curr_heart_rate} BPM,'
 
-            time = time_utility.get_time_string("%I:%M %p")
-            result += f'TIME|{time},'
-
-            speed = total_min / distance
-            result += f'SPEED|{round(speed, 2)} min/km,'
+            avg_speed = total_min / curr_distance
+            # result += f'SPEED|{round(curr_speed, 2)} min/km,'
 
             # directions
-            result += get_directions(total_sec)
+            # result += get_directions(total_sec)
+
+            if src_lat == 0.0 and src_lng == 0.0: 
+                src_lat = random.uniform(-90, 90)
+                src_lng = random.uniform(-180, 180)
+            dest_lat = random.uniform(-90, 90)
+            dest_lng = random.uniform(-180, 180)
         else:
-            exercise_data = get_decoded_wearos_data(socket_data)
+            exercise_sensor_data = get_decoded_wearos_data(socket_data)
 
-            if exercise_data is not None:
-                speed = 0
-                if (exercise_data.speed_avg > 0):
-                    speed = 1000 / (60 * exercise_data.speed_avg)  # min/km
-                distance = exercise_data.distance / 1000  # km
+            if exercise_sensor_data is not None:
+                avg_speed = 0.0
+                if (exercise_sensor_data.speed_avg > 0):
+                    avg_speed = 1000 / (60 * exercise_sensor_data.speed_avg)  # min/km
+                curr_distance = exercise_sensor_data.distance / 1000  # km
+                curr_heart_rate = exercise_sensor_data.heart_rate
+                if not (exercise_sensor_data.latitude == 0.0 and exercise_sensor_data.longitude == 0.0):
+                    if src_lat == 0.0 and src_lng == 0.0: 
+                        src_lat = exercise_sensor_data.latitude
+                        src_lng = exercise_sensor_data.longitude
+                    dest_lat = exercise_sensor_data.latitude
+                    dest_lng = exercise_sensor_data.longitude
 
-                # send the data back to Unity client
-                send_socket_server(socket_data)
-            else:
-                speed = 0
-                distance = 0
+
+        exercise_client_data_proto = exercise_client_data_pb2.ExerciseClientData(
+            total_distance = curr_distance,
+            curr_heart_rate = int(curr_heart_rate),
+            avg_speed = avg_speed,
+            curr_time = curr_time,
+            exercise_duration = int(total_sec),
+        )
+        exercise_client_bytes = wrap_message_with_metadata(exercise_client_data_proto, DataTypes.EXERCISE_CLIENT_DATA)
+        # send the data back to Unity client
+        send_socket_server(exercise_client_bytes)
 
         if "REQUEST_RUNNING_SUMMARY" == socket_data:
-            result += f'DETAILS| Morning Run at {start_place} on {start_time_string},'
-            result += f'AVG_SPEED|{round(speed, 2)} min/km,'
-            result += f'TOT_DISTANCE|{round(distance, 2)} km,'
-            result += 'TOT_TIME|{:02d}:{:02d},'.format(int(total_min), int((total_min % 1) * 60))
+            summary_data_proto = summary_data_pb2.SummaryData(
+                details = f'Morning Run at {start_place} on {start_time_string}',
+                total_distance = curr_distance,
+                avg_speed = avg_speed,
+                total_duration = int(total_sec),
+                src_lat = src_lat,
+                src_lng = src_lng,
+                dest_lat = dest_lat,
+                dest_lng = dest_lng
+            )
+            summary_bytes = wrap_message_with_metadata(summary_data_proto, DataTypes.SUMMARY_DATA)
+            send_socket_server(summary_bytes)
+            # result += f'DETAILS| Morning Run at {start_place} on {start_time_string},'
+            # result += f'AVG_SPEED|{round(avg_speed, 2)} min/km,'
+            # result += f'TOT_DISTANCE|{round(curr_distance, 2)} km,'
+            # result += 'TOT_TIME|{:02d}:{:02d},'.format(int(total_min), int((total_min % 1) * 60))
 
         if "REQUEST_GOOGLE_MAP_API_KEY" == socket_data:
             result += f'GOOGLE_MAP_API_KEY|{google_api.get_google_credential(google_api.KEY_MAP_API)},'
-
-        if result != '':
             send_socket_server(result)
+
+        # if result != '':
+        #     send_socket_server(result)
 
         # utilities.send_get_request(f'http://127.0.0.1:5050/?HR: {last_row_val}=1')
         # curl -X POST -d "" http://127.0.0.1:5050/?Hello=1
 
         time_utility.sleep_seconds(1)
+
+def wrap_message_with_metadata(data, data_type):
+    socket_data = socket_data_pb2.SocketData(
+        data_type = data_type,
+        data = data.SerializeToString()
+    )
+
+    return socket_data.SerializeToString()
 
 
 def get_decoded_wearos_data(socket_data):
@@ -105,18 +151,18 @@ def get_decoded_wearos_data(socket_data):
         data_type = socket_data_msg.data_type
         data = socket_data_msg.data
 
-        # Check if data received is exercise_data protobuf type
-        if data_type == DataTypes.EXERCISE_DATA:
+        # Check if data received is exercise_sensor_data protobuf type
+        if data_type == DataTypes.EXERCISE_SENSOR_DATA:
             try:
-                exercise_data = exercise_data_pb2.ExerciseData()
-                exercise_data.ParseFromString(data)
+                exercise_sensor_data = exercise_sensor_data_pb2.ExerciseData()
+                exercise_sensor_data.ParseFromString(data)
 
-                return exercise_data
+                return exercise_sensor_data
             except DecodeError:
-                # Not a valid exercise_data protobuf message
+                # Not a valid exercise_sensor_data protobuf message
                 return None
         else:
-            # Not an exercise_data protobuf message
+            # Not an exercise_sensor_data protobuf message
             return None
     except DecodeError:
         # Not a valid socket_data protobuf message

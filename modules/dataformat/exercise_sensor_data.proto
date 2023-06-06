@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-message ExerciseData {
+message ExerciseSensorData {
   optional int64 start_time = 1;
   optional int64 update_time = 2;
   optional int64 duration = 3;
