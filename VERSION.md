@@ -7,6 +7,7 @@
 - add YOLOv8 support
 - remove YOLOv4
 - add support for WearOS devices to read sensor data via network
+- add support for ProtoBuf
 
 ### dev/running_coach_demo3
 - use WearOS mock for testing

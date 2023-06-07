@@ -41,44 +41,43 @@ def start_wearos(real_wearos):
     start_time_string = time_utility.get_date_string("%d %B %I:%M %p")
     start_place = 'NUS'
 
-    while flag_is_running:
-        result = ''
+    start_place_lat = 1.294791
+    start_place_lng = 103.7609882
+    temp_count = 0
 
+    while flag_is_running:
         total_sec = (time_utility.get_current_millis() - start_time) / 1000
         total_min = total_sec / 60
-        
         curr_time = time_utility.get_current_millis()
-        # result += f'TIME|{curr_time},'
 
         # receive data from Unity or WearOS client
         socket_data = get_socket_data()
 
         # mock service
         if not real_wearos:
-            curr_distance += (random.randint(1, 5) / 1000)
-            # result += f'DISTANCE|{round(curr_distance, 2)} km,'
-
+            temp_count += 1
+            curr_distance += (random.randint(1, 5) / 1000) # in km
             curr_heart_rate = random.randint(70, 80)
-            # result += f'HR|{curr_heart_rate} BPM,'
-
             avg_speed = total_min / curr_distance
-            # result += f'SPEED|{round(curr_speed, 2)} min/km,'
-
-            # directions
-            # result += get_directions(total_sec)
-
             if src_lat == 0.0 and src_lng == 0.0: 
-                src_lat = random.uniform(-90, 90)
-                src_lng = random.uniform(-180, 180)
-            dest_lat = random.uniform(-90, 90)
-            dest_lng = random.uniform(-180, 180)
+                src_lat = start_place_lat
+                src_lng = start_place_lng
+            dest_lat = src_lat + temp_count * 0.000015
+            dest_lng = src_lng + temp_count * 0.000015
             send_exercise_client_data_to_unity(curr_distance, int(curr_heart_rate), avg_speed, curr_time, int(total_sec))
-        else:
+
+        # skip if no data
+        if socket_data is None:
+            time_utility.sleep_seconds(0.5)
+            continue
+
+        # actual data
+        if real_wearos:
             exercise_sensor_data = get_decoded_wearos_data(socket_data)
 
             if exercise_sensor_data is not None:
                 avg_speed = 0.0
-                if (exercise_sensor_data.speed_avg > 0):
+                if exercise_sensor_data.speed_avg > 0:
                     avg_speed = 1000 / (60 * exercise_sensor_data.speed_avg)  # min/km
                 curr_distance = exercise_sensor_data.distance / 1000  # km
                 curr_heart_rate = exercise_sensor_data.heart_rate
@@ -88,6 +87,7 @@ def start_wearos(real_wearos):
                         src_lng = exercise_sensor_data.longitude
                     dest_lat = exercise_sensor_data.latitude
                     dest_lng = exercise_sensor_data.longitude
+
                 send_exercise_client_data_to_unity(curr_distance, int(curr_heart_rate), avg_speed, curr_time, int(total_sec))
 
         if "REQUEST_RUNNING_SUMMARY" == socket_data:
@@ -103,22 +103,12 @@ def start_wearos(real_wearos):
             )
             summary_bytes = wrap_message_with_metadata(summary_data_proto, DataTypes.SUMMARY_DATA)
             send_socket_server(summary_bytes)
-            # result += f'DETAILS| Morning Run at {start_place} on {start_time_string},'
-            # result += f'AVG_SPEED|{round(avg_speed, 2)} min/km,'
-            # result += f'TOT_DISTANCE|{round(curr_distance, 2)} km,'
-            # result += 'TOT_TIME|{:02d}:{:02d},'.format(int(total_min), int((total_min % 1) * 60))
 
         if "REQUEST_GOOGLE_MAP_API_KEY" == socket_data:
-            result += f'GOOGLE_MAP_API_KEY|{google_api.get_google_credential(google_api.KEY_MAP_API)},'
+            result = f'GOOGLE_MAP_API_KEY|{google_api.get_google_credential(google_api.KEY_MAP_API)},'
             send_socket_server(result)
 
-        # if result != '':
-        #     send_socket_server(result)
 
-        # utilities.send_get_request(f'http://127.0.0.1:5050/?HR: {last_row_val}=1')
-        # curl -X POST -d "" http://127.0.0.1:5050/?Hello=1
-
-        time_utility.sleep_seconds(1)
 
 def send_exercise_client_data_to_unity(total_distance, curr_heart_rate, avg_speed, curr_time, exercise_duration):
     exercise_client_data_proto = exercise_client_data_pb2.ExerciseClientData(
@@ -209,21 +199,6 @@ def start_wearos_threaded(wearos_real):
     server_thread.start()
 
 
-def start_timer():
-    global flag_is_running
-
-    t = 0
-    while flag_is_running:
-        t += 1
-        mins, secs = divmod(t, 60)
-        send_socket_server('TIMER|{:02d}:{:02d},'.format(mins, secs))
-        time_utility.sleep_seconds(1)
-
-
-def start_timer_threaded():
-    threading.Thread(target=start_timer, daemon=True).start()
-
-
 def _monitor_yolo_detection(detector, min_detection_count_percentage=0.6, update_gap=1):
     global flag_is_running
 
@@ -274,8 +249,6 @@ def run(wearos_real=False, hololens_real=False):
 
     flag_is_running = True
     socket_server.start_server_threaded()
-
-    start_timer_threaded()
 
     start_wearos_threaded(wearos_real)
 
