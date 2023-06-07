@@ -1,18 +1,18 @@
 syntax = "proto2";
 
 message ExerciseSensorData {
-  optional int64 start_time = 1;
-  optional int64 update_time = 2;
-  optional int64 duration = 3;
-  optional double latitude = 4;
-  optional double longitude = 5;
-  optional double distance = 6;
-  optional double calories = 7;
-  optional double heart_rate = 8;
-  optional double heart_rate_avg = 9;
-  optional int32 steps = 10;
-  optional double speed = 11;
-  optional double speed_avg = 12;
-  optional string current_status = 13;
-  optional string exercise_type = 14;
+  optional int64 start_time = 1 [default = -1];
+  optional int64 update_time = 2 [default = -1];
+  optional int64 duration = 3 [default = -1];
+  optional double latitude = 4 [default = -1];
+  optional double longitude = 5 [default = -1];
+  optional double distance = 6 [default = -1];
+  optional double calories = 7 [default = -1];
+  optional double heart_rate = 8 [default = -1];
+  optional double heart_rate_avg = 9 [default = -1];
+  optional int32 steps = 10 [default = -1];
+  optional double speed = 11 [default = -1];
+  optional double speed_avg = 12 [default = -1];
+  optional string current_status = 13 [default = ""];
+  optional string exercise_type = 14 [default = ""];
 }

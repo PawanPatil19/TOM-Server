@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12summary_data.proto\"\xa7\x01\n\x0bSummaryData\x12\x0f\n\x07\x64\x65tails\x18\x01 \x01(\t\x12\x16\n\x0etotal_distance\x18\x02 \x01(\x01\x12\x11\n\tavg_speed\x18\x03 \x01(\x01\x12\x16\n\x0etotal_duration\x18\x04 \x01(\x05\x12\x0f\n\x07src_lat\x18\x05 \x01(\x01\x12\x0f\n\x07src_lng\x18\x06 \x01(\x01\x12\x10\n\x08\x64\x65st_lat\x18\x07 \x01(\x01\x12\x10\n\x08\x64\x65st_lng\x18\x08 \x01(\x01')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12summary_data.proto\"\xc5\x01\n\x0bSummaryData\x12\x11\n\x07\x64\x65tails\x18\x01 \x01(\t:\x00\x12\x1a\n\x0etotal_distance\x18\x02 \x01(\x01:\x02-1\x12\x15\n\tavg_speed\x18\x03 \x01(\x01:\x02-1\x12\x1a\n\x0etotal_duration\x18\x04 \x01(\x05:\x02-1\x12\x13\n\x07src_lat\x18\x05 \x01(\x01:\x02-1\x12\x13\n\x07src_lng\x18\x06 \x01(\x01:\x02-1\x12\x14\n\x08\x64\x65st_lat\x18\x07 \x01(\x01:\x02-1\x12\x14\n\x08\x64\x65st_lng\x18\x08 \x01(\x01:\x02-1')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -22,5 +22,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   _globals['_SUMMARYDATA']._serialized_start=23
-  _globals['_SUMMARYDATA']._serialized_end=190
+  _globals['_SUMMARYDATA']._serialized_end=220
 # @@protoc_insertion_point(module_scope)
