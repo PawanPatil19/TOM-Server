@@ -40,6 +40,7 @@ def start_wearos(real_wearos):
     start_time = time_utility.get_current_millis()
     start_time_string = time_utility.get_date_string("%d %B %I:%M %p")
     start_place = 'NUS'
+    exercise_type = 'Running'
 
     start_place_lat = 1.294791
     start_place_lng = 103.7609882
@@ -87,12 +88,13 @@ def start_wearos(real_wearos):
                         src_lng = exercise_sensor_data.longitude
                     dest_lat = exercise_sensor_data.latitude
                     dest_lng = exercise_sensor_data.longitude
+                exercise_type = exercise_sensor_data.exercise_type
 
                 send_exercise_client_data_to_unity(curr_distance, int(curr_heart_rate), avg_speed, curr_time, int(total_sec))
 
         if "REQUEST_RUNNING_SUMMARY" == socket_data:
             summary_data_proto = summary_data_pb2.SummaryData(
-                details = f'Morning Run at {start_place} on {start_time_string}',
+                details = f'{exercise_type} at {start_place} on {start_time_string}',
                 total_distance = curr_distance,
                 avg_speed = avg_speed,
                 total_duration = int(total_sec),
