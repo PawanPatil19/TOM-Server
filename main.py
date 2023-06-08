@@ -13,6 +13,7 @@ from modules.dataformat import socket_data_pb2
 from modules.dataformat import summary_data_pb2
 from modules.dataformat.data_types import DataTypes
 from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
+from modules.langchain_llm.LangChainTextGenerator import LangChainTextGenerator as TextGenerator
 
 flag_is_running = False
 
@@ -57,15 +58,16 @@ def start_wearos(real_wearos):
         # mock service
         if not real_wearos:
             temp_count += 1
-            curr_distance += (random.randint(1, 5) / 1000) # in km
+            curr_distance += (random.randint(1, 5) / 1000)  # in km
             curr_heart_rate = random.randint(70, 80)
             avg_speed = total_min / curr_distance
-            if src_lat == 0.0 and src_lng == 0.0: 
+            if src_lat == 0.0 and src_lng == 0.0:
                 src_lat = start_place_lat
                 src_lng = start_place_lng
             dest_lat = src_lat + temp_count * 0.000015
             dest_lng = src_lng + temp_count * 0.000015
-            send_exercise_client_data_to_unity(curr_distance, int(curr_heart_rate), avg_speed, curr_time, int(total_sec))
+            send_exercise_client_data_to_unity(curr_distance, int(curr_heart_rate), avg_speed,
+                                               curr_time, int(total_sec))
 
         # skip if no data
         if socket_data is None:
@@ -82,26 +84,28 @@ def start_wearos(real_wearos):
                     avg_speed = 1000 / (60 * exercise_sensor_data.speed_avg)  # min/km
                 curr_distance = exercise_sensor_data.distance / 1000  # km
                 curr_heart_rate = exercise_sensor_data.heart_rate
-                if not (exercise_sensor_data.latitude == 0.0 and exercise_sensor_data.longitude == 0.0):
-                    if src_lat == 0.0 and src_lng == 0.0: 
+                if not (
+                        exercise_sensor_data.latitude == 0.0 and exercise_sensor_data.longitude == 0.0):
+                    if src_lat == 0.0 and src_lng == 0.0:
                         src_lat = exercise_sensor_data.latitude
                         src_lng = exercise_sensor_data.longitude
                     dest_lat = exercise_sensor_data.latitude
                     dest_lng = exercise_sensor_data.longitude
                 exercise_type = exercise_sensor_data.exercise_type
 
-                send_exercise_client_data_to_unity(curr_distance, int(curr_heart_rate), avg_speed, curr_time, int(total_sec))
+                send_exercise_client_data_to_unity(curr_distance, int(curr_heart_rate), avg_speed,
+                                                   curr_time, int(total_sec))
 
         if "REQUEST_RUNNING_SUMMARY" == socket_data:
             summary_data_proto = summary_data_pb2.SummaryData(
-                details = f'{exercise_type} at {start_place} on {start_time_string}',
-                total_distance = curr_distance,
-                avg_speed = avg_speed,
-                total_duration = int(total_sec),
-                src_lat = src_lat,
-                src_lng = src_lng,
-                dest_lat = dest_lat,
-                dest_lng = dest_lng
+                details=f'{exercise_type} at {start_place} on {start_time_string}',
+                total_distance=curr_distance,
+                avg_speed=avg_speed,
+                total_duration=int(total_sec),
+                src_lat=src_lat,
+                src_lng=src_lng,
+                dest_lat=dest_lat,
+                dest_lng=dest_lng
             )
             summary_bytes = wrap_message_with_metadata(summary_data_proto, DataTypes.SUMMARY_DATA)
             send_socket_server(summary_bytes)
@@ -111,24 +115,25 @@ def start_wearos(real_wearos):
             send_socket_server(result)
 
 
-
-def send_exercise_client_data_to_unity(total_distance, curr_heart_rate, avg_speed, curr_time, exercise_duration):
+def send_exercise_client_data_to_unity(total_distance, curr_heart_rate, avg_speed, curr_time,
+                                       exercise_duration):
     exercise_client_data_proto = exercise_client_data_pb2.ExerciseClientData(
-        total_distance = total_distance,
-        curr_heart_rate = curr_heart_rate,
-        avg_speed = avg_speed,
-        curr_time = curr_time,
-        exercise_duration = exercise_duration,
+        total_distance=total_distance,
+        curr_heart_rate=curr_heart_rate,
+        avg_speed=avg_speed,
+        curr_time=curr_time,
+        exercise_duration=exercise_duration,
     )
-    exercise_client_bytes = wrap_message_with_metadata(exercise_client_data_proto, DataTypes.EXERCISE_CLIENT_DATA)
+    exercise_client_bytes = wrap_message_with_metadata(exercise_client_data_proto,
+                                                       DataTypes.EXERCISE_CLIENT_DATA)
     # send the data back to Unity client
     send_socket_server(exercise_client_bytes)
 
 
 def wrap_message_with_metadata(data, data_type):
     socket_data = socket_data_pb2.SocketData(
-        data_type = data_type,
-        data = data.SerializeToString()
+        data_type=data_type,
+        data=data.SerializeToString()
     )
 
     return socket_data.SerializeToString()
@@ -201,6 +206,23 @@ def start_wearos_threaded(wearos_real):
     server_thread.start()
 
 
+text_generator = TextGenerator(0)
+translation_map = {}
+
+
+def get_translation(object):
+    global translation_map
+
+    translation = translation_map.get(object)
+    if translation is not None:
+        return object + " - " + translation
+
+    translation = text_generator.generate_response(
+        "What is the Spanish translation of {input}? Provide only the answer.", object)
+    translation_map[object] = translation
+    return object + " - " + translation
+
+
 def _monitor_yolo_detection(detector, min_detection_count_percentage=0.6, update_gap=1):
     global flag_is_running
 
@@ -221,10 +243,10 @@ def _monitor_yolo_detection(detector, min_detection_count_percentage=0.6, update
         result = ''
 
         for item in detection_diff:
-            # if detection_diff[item] <= -1:
-            #     result += f'INSTRUCT|,'
+            if detection_diff[item] <= -1:
+                result += f'INSTRUCT|,'
             if detection_diff[item] >= 1:
-                result += f'INSTRUCT|{item},'
+                result += f'INSTRUCT|{get_translation(item)},'
 
         if result != '':
             send_socket_server(result)
