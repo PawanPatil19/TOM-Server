@@ -3,6 +3,9 @@
 ### main
 - description
 
+### dev/running_coach_demo5
+- integrate ChatGPT support
+
 ### dev/running_coach_demo4
 - add YOLOv8 support
 - remove YOLOv4
