@@ -1,7 +1,16 @@
 # Change log (version history)
 
-### main
+## main
 - description
+
+
+## demo/running_coach
+
+### v2.0
+- new UI
+
+
+## dev/running_coach_demo
 
 ### dev/running_coach_demo5
 - integrate ChatGPT support
