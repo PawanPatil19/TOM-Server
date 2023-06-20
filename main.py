@@ -16,7 +16,8 @@ from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
 from modules.langchain_llm.LangChainTextGenerator import LangChainTextGenerator as TextGenerator
 
 flag_is_running = False
-
+GOOGLE_CREDENTIAL_FILE = 'config/google_credential.json'  # has the 'map_api_key', ...
+ORS_CREDENTIAL_FILE = 'config/ors_credential.json'  # has the 'map_api_key', ...
 
 def send_socket_server(data):
     print(data)
@@ -111,7 +112,7 @@ def start_wearos(real_wearos):
             send_socket_server(summary_bytes)
 
         if "REQUEST_GOOGLE_MAP_API_KEY" == socket_data:
-            result = f'GOOGLE_MAP_API_KEY|{google_api.get_google_credential(google_api.KEY_MAP_API)},'
+            result = f'GOOGLE_MAP_API_KEY|{google_api.get_google_credential(google_api.KEY_MAP_API, GOOGLE_CREDENTIAL_FILE)},'
             send_socket_server(result)
 
 
