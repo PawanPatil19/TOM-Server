@@ -8,10 +8,10 @@
 
 
 # Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
-path: ../datasets/coco128  # dataset root dir
-train: images/train2017  # train images (relative to 'path') 128 images
-val: images/train2017  # val images (relative to 'path') 128 images
-test:  # test images (optional)
+path: ../datasets/custom  # dataset root dir
+train: train/images # train images (relative to 'path') 128 images
+val: valid/images # val images (relative to 'path') 128 images
+test: test/images  # test images (optional)
 
 # Classes
 names:
@@ -95,7 +95,28 @@ names:
   77: teddy bear
   78: hair drier
   79: toothbrush
-
+  80: apple
+  81: banana
+  82: bell_pepper
+  83: cabbage
+  84: carrot
+  85: chilli_pepper
+  86: corn
+  87: cucumber
+  88: eggplant
+  89: garlic
+  90: grape
+  91: kiwi
+  92: lemon
+  93: lettuce
+  94: mango
+  95: onion
+  96: orange
+  97: pineapple
+  98: potato
+  99: sweetpotato
+  100: tomato
+  101: watermelon
 
 # Download script/URL (optional)
-download: https://ultralytics.com/assets/coco128.zip
+#download: https://ultralytics.com/assets/coco128.zip

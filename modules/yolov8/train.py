@@ -1,10 +1,11 @@
 from ultralytics import YOLO
+from roboflow import Roboflow
 
 
 model = YOLO("yolov8n.pt") # load a pretrained model
 
 #Train the model
-model.train(data="training.yaml", epochs=20)
+model.train(data="training.yaml", epochs=25)
 metrics = model.val()
 #results = model("https://ultralytics.com/images/bus.jpg")
 success = model.export(format="onnx")
