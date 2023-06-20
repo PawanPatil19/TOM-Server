@@ -1,5 +1,8 @@
 # Add specific files/folders related to your project
 
+# credentail
+credential/*
+
 # fitbit
 fitbit_credential.json
 fitbit_token.json
