@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+message TypePositionMappingData {
+  optional int32 running_distance_position = 1 [default = 0];
+  optional int32 running_heartrate_position = 2 [default = 5];
+  optional int32 running_speed_position = 3 [default = 6];
+  optional int32 running_duration_position = 4 [default = 7];
+  optional int32 running_time_position = 5 [default = 11];
+  optional int32 summary_detail_position = 6 [default = 0];
+  optional int32 summary_distance_position = 7 [default = 1];
+  optional int32 summary_speed_position = 8 [default = 2];
+  optional int32 summary_duration_position = 9 [default = 3];  
+}

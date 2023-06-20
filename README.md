@@ -19,7 +19,7 @@ A server for TOM
 
 
 ## Requirements
-- make sure `pyhton3` is installed
+- make sure `python3` is installed
 
 
 ## Installation
