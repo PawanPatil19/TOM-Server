@@ -7,7 +7,7 @@ import googlemaps
 from modules.maps.direction_data import DirectionData
 from modules.maps.location_data import LocationData
 
-GOOGLE_CREDENTIAL_FILE = '../../config/google_credential.json'  # has the 'map_api_key', ...
+GOOGLE_CREDENTIAL_FILE = '../../credential/google_credential.json'  # has the 'map_api_key', ...
 KEY_MAP_API = 'map_api_key'
 
 

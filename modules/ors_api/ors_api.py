@@ -7,7 +7,7 @@ import openrouteservice as openrouteservice
 from modules.maps import maps_util
 from modules.maps.direction_data import DirectionData
 
-ORS_CREDENTIAL_FILE = '../../config/ors_credential.json'  # has the 'map_api_key', ...
+ORS_CREDENTIAL_FILE = '../../credential/ors_credential.json'  # has the 'map_api_key', ...
 KEY_MAP_API = 'map_api_key'
 
 
