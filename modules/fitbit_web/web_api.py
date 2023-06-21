@@ -1,6 +1,6 @@
 # wrapper for https://github.com/orcasgit/python-fitbit 
 
-
+from config import FITBIT_CREDENTIAL_FILE
 from . import gather_keys_oauth2 as Oauth2
 import fitbit
 import pandas as pd
@@ -8,7 +8,7 @@ import datetime
 import json
 
 # from .. utilities import  file as file_utility
-import utilities.file as file_utility
+import modules.utilities.file as file_utility
 
 # DO NOT CHANGE FOLLOWING
 DATA_TYPE_HEART_RATE = 'activities/heart'
@@ -24,7 +24,6 @@ DETAIL_LEVEL_1MIN = '1min'
 DETAIL_LEVEL_5MIN = '5min'
 DETAIL_LEVEL_15MIN = '15min'
 
-FITBIT_CREDENTIAL_FILE = 'credential/fitbit_credential.json'  # has the 'client_id' and 'client_secret'
 KEY_CLIENT_ID = 'client_id'
 KEY_CLIENT_SECRET = 'client_secret'
 

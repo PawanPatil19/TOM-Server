@@ -14,5 +14,5 @@ locations_sample_response_osm = [LocationData(
 
 @pytest.mark.asyncio
 async def test_locations_osm_success():
-    response = await get_locations("Marina Bay Sands", 0, )
+    response = await get_locations("Marina Bay Sands", 0)
     assert response == locations_sample_response_osm
