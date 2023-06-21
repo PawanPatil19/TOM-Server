@@ -24,11 +24,11 @@ DETAIL_LEVEL_1MIN = '1min'
 DETAIL_LEVEL_5MIN = '5min'
 DETAIL_LEVEL_15MIN = '15min'
 
-FITBIT_CREDENTIAL_FILE = 'config/fitbit_credential.json'  # has the 'client_id' and 'client_secret'
+FITBIT_CREDENTIAL_FILE = 'credential/fitbit_credential.json'  # has the 'client_id' and 'client_secret'
 KEY_CLIENT_ID = 'client_id'
 KEY_CLIENT_SECRET = 'client_secret'
 
-FITBIT_TOKEN_FILE = 'config/fitbit_token.json'  # has the 'access_token' and 'refresh_token'
+FITBIT_TOKEN_FILE = 'credential/fitbit_token.json'  # has the 'access_token' and 'refresh_token'
 KEY_ACCESS_TOKEN = 'access_token'
 KEY_REFRESH_TOKEN = 'refresh_token'
 

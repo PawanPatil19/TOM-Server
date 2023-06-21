@@ -3,7 +3,7 @@ import os
 from langchain.llms import OpenAI
 from langchain.prompts import PromptTemplate
 
-OPENAI_CREDENTIAL_FILE = 'config/openai_credential.json'  # has the 'openai_api_key', ...
+OPENAI_CREDENTIAL_FILE = 'credential/openai_credential.json'  # has the 'openai_api_key', ...
 KEY_OPENAI_API = 'openai_api_key'
 
 

@@ -19,16 +19,16 @@ A server for TOM
 
 
 ## Requirements
-- make sure `pyhton3` is installed
+- make sure `python3` is installed
 
 
 ## Installation
 - install `conda` (e.g., [Anaconda](https://docs.anaconda.com/anaconda/install/)/[Miniconda](https://docs.conda.io/en/latest/miniconda.html))
 - create new conda environment `tom` using `conda env create -f environment-cpu.yml`
 - activate `tom` environment, `conda activate tom`
-- create a file `config/fitbit_credential.json` with Fitbit credentials such as `{"client_id": "ID","client_secret": "SECRET"}` (Note: json format must be correct) 
-- create a file `config/google_credential.json` with Google credentials such as `{"map_api_key": "KEY"}` (Note: json format must be correct)
-- create a file `config/openai_credential.json` with OpenAI credentials such as `{"openai_api_key": "KEY"}` (Note: json format must be correct)
+- create a file `credential/fitbit_credential.json` with Fitbit credentials such as `{"client_id": "ID","client_secret": "SECRET"}` (Note: json format must be correct) 
+- create a file `credential/google_credential.json` with Google credentials such as `{"map_api_key": "KEY"}` (Note: json format must be correct)
+- create a file `credential/openai_credential.json` with OpenAI credentials such as `{"openai_api_key": "KEY"}` (Note: json format must be correct)
 - download the pretrained weights for YOLOv8 from [ultralytics](https://github.com/ultralytics/ultralytics) (e.g., [yolov8n.pt](https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt)) and copy it to `modules/yolov8/weights/` and rename it as `model.pt` (i.e., `modules/yolov8/weights/model.pt`)
 - [Configure](https://docs.microsoft.com/en-us/windows/mixed-reality/develop/platform-capabilities-and-apis/using-the-windows-device-portal) the Hololens Device Portal. Save [your user credentials](https://docs.microsoft.com/en-us/windows/mixed-reality/develop/platform-capabilities-and-apis/using-the-windows-device-portal#creating-a-username-and-password) to `modules/hololens/hololens_config.py`
 

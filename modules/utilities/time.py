@@ -3,6 +3,8 @@
 import sys
 import time
 from datetime import datetime
+from datetime import timedelta
+
 
 def beep(times=1):
     for i in range(1, times):
@@ -31,21 +33,31 @@ def sleep_milliseconds(milliseconds=1):
     time.sleep(milliseconds / 1000)
 
 
-def get_date_string(format = "%Y%m%d"):
+def get_date_string(format="%Y%m%d"):
     return time.strftime(format)
 
 
-def get_time_string(format = "%H:%M:%S"):
+def get_time_string(format="%H:%M:%S"):
     return time.strftime(format)
+
 
 # return date_time object
 def get_date_time_now():
     return datetime.now()
 
 
-def get_date_time_diff_string(date_time1, date_time2, format = "%H:%M:%S"):
+def get_date_time_diff_string(date_time1, date_time2, format="%H:%M:%S"):
     return (date_time1 - date_time2).strftime("%H:%M:%S")
 
 
+def get_hh_mm_ss_format(seconds):
+    result = str(timedelta(seconds=seconds))
+    if result[0] == '0':
+        result = result[2:]
+    return result
+
 # print(get_date())
 # print(get_date("%Y-%m-%d"))
+# print(get_hh_mm_ss_format(10))
+# print(get_hh_mm_ss_format(65))
+# print(get_hh_mm_ss_format(3665.1))

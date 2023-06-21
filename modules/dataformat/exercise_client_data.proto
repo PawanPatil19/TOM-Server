@@ -1,9 +1,0 @@
-syntax = "proto2";
-
-message ExerciseClientData {
-  optional double total_distance = 1 [default = -1];
-  optional int32 curr_heart_rate = 2 [default = -1];
-  optional double avg_speed = 3 [default = -1];
-  optional int64 curr_time = 4 [default = -1];
-  optional int32 exercise_duration = 5 [default = -1];
-}

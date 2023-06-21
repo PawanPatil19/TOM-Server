@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+message RunningData {
+  optional string distance = 1 [default = ""];
+  optional string heart_rate = 2 [default = ""];
+  optional string speed = 3 [default = ""];
+  optional string duration = 4 [default = ""];
+  optional string time = 5 [default = ""];  
+}
