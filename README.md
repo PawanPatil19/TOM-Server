@@ -54,6 +54,8 @@ A server for TOM
 ## Third-party libraries
 - [python-fitbit](https://github.com/orcasgit/python-fitbit)
 - [google-maps](https://developers.google.com/maps/documentation/maps-static/start)
+- [Nominatim OpenStreetMap](https://nominatim.org/release-docs/latest/api/Overview/)
+- [Openrouteservice](https://openrouteservice.org/dev/#/api-docs)
 - [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics)
 - [Hololens YOLOv4 Object Detection](https://github.com/Interactions-HSG/21-MT-JanickSpirig-HoloLens-ObjectDetection) from [tensorflow-yolov4-tflite](https://github.com/theAIGuysCode/tensorflow-yolov4-tflite)
 
