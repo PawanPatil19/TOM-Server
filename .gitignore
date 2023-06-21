@@ -1,6 +1,6 @@
 # Add specific files/folders related to your project
 
-# credentail
+# credential
 credential/*
 
 # fitbit
@@ -10,6 +10,8 @@ fitbit_token.json
 google_credential.json
 # openai
 openai_credential.json
+# ors
+ors_credential.json
 
 # yolo
 **/checkpoints/
