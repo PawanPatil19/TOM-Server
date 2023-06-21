@@ -45,6 +45,7 @@ Thumbs.db
 proguard/
 
 # IDE - VSCode
+.vscode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json

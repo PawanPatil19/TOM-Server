@@ -37,8 +37,6 @@ class DisplayPosition(Enum):
 
 
 flag_is_running = False
-GOOGLE_CREDENTIAL_FILE = 'credential/google_credential.json'  # has the 'map_api_key', ...
-ORS_CREDENTIAL_FILE = 'credential/ors_credential.json'  # has the 'map_api_key', ...
 
 def send_socket_server(data):
     print(data)

@@ -4,32 +4,32 @@ import time
 
 import openrouteservice as openrouteservice
 
+from config import ORS_CREDENTIAL_FILE
 from modules.maps import maps_util
 from modules.maps.direction_data import DirectionData
 
-ORS_CREDENTIAL_FILE = '../../credential/ors_credential.json'  # has the 'map_api_key', ...
 KEY_MAP_API = 'map_api_key'
 
 
 # return {"map_api_key": "YYY"}
-def read_ors_credential(filepath):
+def read_ors_credential():
     print('Reading ORS credentials')
-    with open(filepath, 'r') as f:
+    with open(ORS_CREDENTIAL_FILE, 'r') as f:
         credential = json.load(f)
     return credential
 
 
-def get_ors_credential(key, filepath, credential=None):
+def get_ors_credential(key, credential=None):
     _credential = credential
     if _credential is None:
-        _credential = read_ors_credential(filepath)
+        _credential = read_ors_credential()
 
     return _credential[key]
 
 
 def create_ors_client(option):
     if option == 0:
-        return openrouteservice.Client(key=get_ors_credential(KEY_MAP_API, ORS_CREDENTIAL_FILE))
+        return openrouteservice.Client(key=get_ors_credential(KEY_MAP_API))
     elif option == 1:
         return openrouteservice.Client(base_url='http://localhost:8080/ors')
     else:

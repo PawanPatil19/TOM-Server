@@ -4,10 +4,10 @@ import time
 
 import googlemaps
 
+from config import GOOGLE_CREDENTIAL_FILE
 from modules.maps.direction_data import DirectionData
 from modules.maps.location_data import LocationData
 
-GOOGLE_CREDENTIAL_FILE = 'credential/google_credential.json'  # has the 'map_api_key', ...
 KEY_MAP_API = 'map_api_key'
 
 
@@ -27,10 +27,12 @@ def get_google_credential(key, credential=None):
     return _credential[key]
 
 
-client = googlemaps.Client(key=get_google_credential(KEY_MAP_API))
+def get_google_client():
+    return googlemaps.Client(key=get_google_credential(KEY_MAP_API))
 
 
 async def find_locations_google(search_text):
+    client = get_google_client()
     response = client.places(query=search_text)
 
     location_data_list = []
@@ -50,6 +52,7 @@ async def find_locations_google(search_text):
 async def find_directions_google(start_time, src_lat, src_lng, dest_lat, dest_lng, bearing):
     src = f"{src_lat}, {src_lng}"
     dest = f"{dest_lat}, {dest_lng}"
+    client = get_google_client()
     directions_result = client.directions(
         origin=src,
         destination=dest,
@@ -68,8 +71,7 @@ async def find_directions_google(start_time, src_lat, src_lng, dest_lat, dest_ln
     curr_duration_str = leg['steps'][0]['duration']['text']
     curr_instr = leg['steps'][0]['html_instructions']
     curr_direction = leg['steps'][0]['maneuver'] if 'maneuver' in leg['steps'][0] else 'straight'
-    next_direction = leg['steps'][1]['maneuver'] if len(leg['steps']) > 1 and 'maneuver' in \
-                                                    leg['steps'][1] else None
+    next_direction = leg['steps'][1]['maneuver'] if len(leg['steps']) > 1 and 'maneuver' in leg['steps'][1] else None
 
     return DirectionData(
         start_time=start_time,
@@ -83,8 +85,7 @@ async def find_directions_google(start_time, src_lat, src_lng, dest_lat, dest_ln
         curr_duration=curr_duration,
         curr_duration_str=curr_duration_str,
         # regex to remove html tags, from https://stackoverflow.com/a/12982689/18753727
-        curr_instr=re.sub(re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});'), '',
-                          curr_instr),
+        curr_instr=re.sub(re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});'), '', curr_instr),
         curr_direction=curr_direction,
         next_direction=next_direction
     )
