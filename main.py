@@ -131,25 +131,25 @@ def start_wearos(real_wearos):
             send_socket_server(summary_data_bytes)
 
         if "REQUEST_RUNNING_DATA_UNIT" == socket_data:
-            running_data_proto = running_data_pb2.RunningData(
+            running_unit_data_proto = running_data_pb2.RunningData(
                 distance='km',
                 heart_rate='bpm',
                 speed='min/km',
                 duration='',
                 time='',
             )
-            running_unit_bytes = wrap_message_with_metadata(running_data_proto,
+            running_unit_bytes = wrap_message_with_metadata(running_unit_data_proto,
                                                             DataTypes.RUNNING_UNIT)
             send_socket_server(running_unit_bytes)
 
         if "REQUEST_SUMMARY_DATA_UNIT" == socket_data:
-            summary_data_proto = summary_data_pb2.SummaryData(
+            summary_unit_data_proto = summary_data_pb2.SummaryData(
                 detail='',
                 distance='km',
                 speed='min/km',
                 duration='',
             )
-            summary_unit_bytes = wrap_message_with_metadata(summary_data_proto,
+            summary_unit_bytes = wrap_message_with_metadata(summary_unit_data_proto,
                                                             DataTypes.SUMMARY_UNIT)
             send_socket_server(summary_unit_bytes)
 
@@ -170,7 +170,7 @@ def start_wearos(real_wearos):
             send_socket_server(type_mapping_bytes)
 
         if "REQUEST_GOOGLE_MAP_API_KEY" == socket_data:
-            result = f'GOOGLE_MAP_API_KEY|{google_api.get_google_credential(google_api.KEY_MAP_API, GOOGLE_CREDENTIAL_FILE)},'
+            result = f'GOOGLE_MAP_API_KEY|{google_api.get_google_credential(google_api.KEY_MAP_API)},'
             send_socket_server(result)
 
 

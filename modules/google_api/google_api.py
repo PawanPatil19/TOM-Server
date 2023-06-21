@@ -7,27 +7,27 @@ import googlemaps
 from modules.maps.direction_data import DirectionData
 from modules.maps.location_data import LocationData
 
-GOOGLE_CREDENTIAL_FILE = '../../credential/google_credential.json'  # has the 'map_api_key', ...
+GOOGLE_CREDENTIAL_FILE = 'credential/google_credential.json'  # has the 'map_api_key', ...
 KEY_MAP_API = 'map_api_key'
 
 
 # return {"map_api_key": "YYY"}
-def read_google_credential(filepath):
+def read_google_credential():
     print('Reading Google credentials')
-    with open(filepath, 'r') as f:
+    with open(GOOGLE_CREDENTIAL_FILE, 'r') as f:
         credential = json.load(f)
     return credential
 
 
-def get_google_credential(key, filepath, credential=None):
+def get_google_credential(key, credential=None):
     _credential = credential
     if _credential is None:
-        _credential = read_google_credential(filepath)
+        _credential = read_google_credential()
 
     return _credential[key]
 
 
-client = googlemaps.Client(key=get_google_credential(KEY_MAP_API, GOOGLE_CREDENTIAL_FILE))
+client = googlemaps.Client(key=get_google_credential(KEY_MAP_API))
 
 
 async def find_locations_google(search_text):
@@ -68,7 +68,8 @@ async def find_directions_google(start_time, src_lat, src_lng, dest_lat, dest_ln
     curr_duration_str = leg['steps'][0]['duration']['text']
     curr_instr = leg['steps'][0]['html_instructions']
     curr_direction = leg['steps'][0]['maneuver'] if 'maneuver' in leg['steps'][0] else 'straight'
-    next_direction = leg['steps'][1]['maneuver'] if len(leg['steps']) > 1 and 'maneuver' in leg['steps'][1] else None
+    next_direction = leg['steps'][1]['maneuver'] if len(leg['steps']) > 1 and 'maneuver' in \
+                                                    leg['steps'][1] else None
 
     return DirectionData(
         start_time=start_time,
@@ -82,7 +83,8 @@ async def find_directions_google(start_time, src_lat, src_lng, dest_lat, dest_ln
         curr_duration=curr_duration,
         curr_duration_str=curr_duration_str,
         # regex to remove html tags, from https://stackoverflow.com/a/12982689/18753727
-        curr_instr=re.sub(re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});'), '', curr_instr),
+        curr_instr=re.sub(re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});'), '',
+                          curr_instr),
         curr_direction=curr_direction,
         next_direction=next_direction
     )

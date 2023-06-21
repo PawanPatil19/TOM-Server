@@ -51,10 +51,8 @@ def get_date_time_diff_string(date_time1, date_time2, format="%H:%M:%S"):
 
 
 def get_hh_mm_ss_format(seconds):
-    result = str(timedelta(seconds=seconds))
-    if result[0] == '0':
-        result = result[2:]
-    return result
+    result = str(timedelta(seconds=seconds))  # format=<0:00:10.10000>
+    return result.lstrip('0').lstrip(':')
 
 # print(get_date())
 # print(get_date("%Y-%m-%d"))
