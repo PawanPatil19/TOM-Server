@@ -13,7 +13,7 @@ _rx_queue = Queue()
 
 
 # references: https://websockets.readthedocs.io/en/stable/reference/server.html , https://pypi.org/project/websockets/
-async def ws_echo(websocket):
+async def receive_data_from_websocket(websocket):
     global _rx_queue, _CONNECTIONS
 
     _CONNECTIONS.add(websocket)
@@ -34,7 +34,7 @@ def broadcastmsg(msg):
 
 
 async def ws_main():
-    async with websockets.serve(ws_echo, SERVER_IP, SERVER_PORT):
+    async with websockets.serve(receive_data_from_websocket, SERVER_IP, SERVER_PORT):
         await asyncio.Future()  # run forever
 
 

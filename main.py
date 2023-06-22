@@ -3,6 +3,7 @@ import threading
 from collections import Counter
 from google.protobuf.message import DecodeError
 from enum import Enum
+import logging
 
 import modules.google_api.google_api as google_api
 import modules.hololens.hololens_portal as hololens_portal
@@ -12,6 +13,7 @@ from modules.dataformat import exercise_wear_os_data_pb2
 from modules.dataformat import socket_data_pb2
 from modules.dataformat import running_data_pb2
 from modules.dataformat import summary_data_pb2
+from modules.dataformat import request_data_pb2
 from modules.dataformat import type_position_mapping_data_pb2
 from modules.dataformat.data_types import DataTypes
 from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
@@ -64,12 +66,6 @@ def start_wearos(real_wearos):
     start_place_lng = 103.7609882
     temp_count = 0
 
-    curr_lat = start_place_lat
-    curr_lng = start_place_lng
-    dest_lat = 0.0
-    dest_lng = 0.0
-    bearing = 0
-
     while flag_is_running:
         total_sec = (time_utility.get_current_millis() - start_time) / 1000
         total_min = (total_sec / 60)
@@ -101,35 +97,44 @@ def start_wearos(real_wearos):
             time_utility.sleep_seconds(0.5)
             continue
 
-        # actual data
-        if real_wearos:
-            exercise_wear_os_data = get_decoded_wearos_data(socket_data)
+        # decode data
+        socket_data_type, decoded_data = get_decoded_socket_data(socket_data)
+        if socket_data_type is None:
+            continue
 
-            if exercise_wear_os_data is not None:
-                avg_speed = 0.0
-                if exercise_wear_os_data.speed_avg > 0:
-                    avg_speed = 1000 / (60 * exercise_wear_os_data.speed_avg)  # min/km
-                curr_distance = exercise_wear_os_data.distance / 1000  # km
-                curr_heart_rate = exercise_wear_os_data.heart_rate
-                exercise_type = exercise_wear_os_data.exercise_type
-                curr_lat = exercise_wear_os_data.curr_lat
-                curr_lng = exercise_wear_os_data.curr_lng
-                dest_lat = exercise_wear_os_data.dest_lat
-                dest_lng = exercise_wear_os_data.dest_lng
-                bearing = exercise_wear_os_data.bearing
+        if socket_data_type == DataTypes.EXERCISE_WEAR_OS_DATA:
+            avg_speed = 0.0
+            if decoded_data.speed_avg > 0:
+                avg_speed = 1000 / (60 * decoded_data.speed_avg)  # min/km
+            curr_distance = decoded_data.distance / 1000  # km
+            curr_heart_rate = decoded_data.heart_rate
+            exercise_type = decoded_data.exercise_type
 
-                running_data_proto = running_data_pb2.RunningData(
-                    distance=f'{curr_distance:.2f}',
-                    heart_rate=f'{int(curr_heart_rate)}',
-                    speed=f'{avg_speed:.2f}',
-                    duration=time_utility.get_hh_mm_ss_format(int(total_sec)),
-                    time=time_utility.get_date_string("%I:%M %p"),
-                )
-                running_data_bytes = wrap_message_with_metadata(running_data_proto,
-                                                                DataTypes.RUNNING_DATA)
-                send_socket_server(running_data_bytes)
+            running_data_proto = running_data_pb2.RunningData(
+                distance=f'{curr_distance:.2f}',
+                heart_rate=f'{int(curr_heart_rate)}',
+                speed=f'{avg_speed:.2f}',
+                duration=time_utility.get_hh_mm_ss_format(int(total_sec)),
+                time=time_utility.get_date_string("%I:%M %p"),
+            )
+            running_data_bytes = wrap_message_with_metadata(running_data_proto,
+                                                            DataTypes.RUNNING_DATA)
+            send_socket_server(running_data_bytes)
 
-        if "REQUEST_SUMMARY_DATA" == socket_data:
+
+        elif socket_data_type == DataTypes.REQUEST_RUNNING_DATA:
+            running_data_proto = running_data_pb2.RunningData(
+                distance=f'{curr_distance:.2f}',
+                heart_rate=f'{int(curr_heart_rate)}',
+                speed=f'{avg_speed:.2f}',
+                duration=time_utility.get_hh_mm_ss_format(int(total_sec)),
+                time=time_utility.get_date_string("%I:%M %p"),
+            )
+            running_data_bytes = wrap_message_with_metadata(running_data_proto,
+                                                            DataTypes.RUNNING_DATA)
+            send_socket_server(running_data_bytes)
+
+        elif socket_data_type == DataTypes.REQUEST_SUMMARY_DATA:
             summary_data_proto = summary_data_pb2.SummaryData(
                 detail=f'{exercise_type} at {start_place} on {start_time_string}',
                 distance=f'{curr_distance:.2f}',
@@ -140,7 +145,7 @@ def start_wearos(real_wearos):
                                                             DataTypes.SUMMARY_DATA)
             send_socket_server(summary_data_bytes)
 
-        if "REQUEST_RUNNING_DATA_UNIT" == socket_data:
+        elif socket_data_type == DataTypes.REQUEST_RUNNING_DATA_UNIT:
             running_unit_data_proto = running_data_pb2.RunningData(
                 distance='km',
                 heart_rate='bpm',
@@ -152,7 +157,7 @@ def start_wearos(real_wearos):
                                                             DataTypes.RUNNING_UNIT)
             send_socket_server(running_unit_bytes)
 
-        if "REQUEST_SUMMARY_DATA_UNIT" == socket_data:
+        elif socket_data_type == DataTypes.REQUEST_SUMMARY_DATA_UNIT:
             summary_unit_data_proto = summary_data_pb2.SummaryData(
                 detail='',
                 distance='km',
@@ -163,7 +168,7 @@ def start_wearos(real_wearos):
                                                             DataTypes.SUMMARY_UNIT)
             send_socket_server(summary_unit_bytes)
 
-        if "REQUEST_TYPE_POSITION_MAPPING" == socket_data:
+        elif socket_data_type == DataTypes.REQUEST_TYPE_POSITION_MAPPING:
             type_position_mapping_data = type_position_mapping_data_pb2.TypePositionMappingData(
                 running_distance_position=DisplayPosition.Top.value,
                 running_heartrate_position=DisplayPosition.TopLeft.value,
@@ -179,9 +184,8 @@ def start_wearos(real_wearos):
                                                             DataTypes.TYPE_POSITION_MAPPING_DATA)
             send_socket_server(type_mapping_bytes)
 
-        if "REQUEST_GOOGLE_MAP_API_KEY" == socket_data:
-            result = f'GOOGLE_MAP_API_KEY|{google_api.get_google_credential(google_api.KEY_MAP_API)},'
-            send_socket_server(result)
+        else:
+            print(f'Unsupported data type: {socket_data_type}')
 
 
 def wrap_message_with_metadata(data, data_type):
@@ -193,34 +197,60 @@ def wrap_message_with_metadata(data, data_type):
     return socket_data.SerializeToString()
 
 
-def get_decoded_wearos_data(socket_data):
+# return the <type, data> tuple
+def get_decoded_socket_data(socket_data):
     if socket_data is None or isinstance(socket_data, str):
-        return None
+        logging.error('Received data is not a valid socket_data instance')
+        return None, None
 
     try:
-        # Attempt to parse the received data as socket_data protobuf 
         socket_data_msg = socket_data_pb2.SocketData()
         socket_data_msg.ParseFromString(socket_data)
 
         data_type = socket_data_msg.data_type
         data = socket_data_msg.data
 
-        # Check if data received is exercise_wear_os_data protobuf type
         if data_type == DataTypes.EXERCISE_WEAR_OS_DATA:
-            try:
-                exercise_wear_os_data = exercise_wear_os_data_pb2.ExerciseWearOsData()
-                exercise_wear_os_data.ParseFromString(data)
-
-                return exercise_wear_os_data
-            except DecodeError:
-                # Not a valid exercise_wear_os_data protobuf message
-                return None
+            return decode_exercise_data(data)
+        elif is_request_data_type(data_type):
+            return decode_request_data(data_type, data)
         else:
-            # Not an exercise_wear_os_data protobuf message
-            return None
+            logging.error('Unknown socket_data protobuf type')
+            return data_type, None
     except DecodeError:
-        # Not a valid socket_data protobuf message
-        return None
+        logging.error('Received data is not a valid socket_data protobuf message')
+        return None, None
+
+
+def decode_exercise_data(data):
+    try:
+        exercise_wear_os_data = exercise_wear_os_data_pb2.ExerciseWearOsData()
+        exercise_wear_os_data.ParseFromString(data)
+
+        return DataTypes.EXERCISE_WEAR_OS_DATA, exercise_wear_os_data
+    except DecodeError:
+        logging.error('Received data is not a valid exercise_sensor_data protobuf message')
+        return None, None
+
+
+def is_request_data_type(data_type):
+    return data_type in [DataTypes.REQUEST_RUNNING_DATA,
+                         DataTypes.REQUEST_SUMMARY_DATA,
+                         DataTypes.REQUEST_RUNNING_DATA_UNIT,
+                         DataTypes.REQUEST_SUMMARY_DATA_UNIT,
+                         DataTypes.REQUEST_TYPE_POSITION_MAPPING,
+                         ]
+
+
+def decode_request_data(request_type, data):
+    try:
+        request_data = request_data_pb2.RequestData()
+        request_data.ParseFromString(data)
+
+        return request_type, request_data
+    except DecodeError:
+        logging.error('Received data is not a valid request_data protobuf message')
+        return None, None
 
 
 last_update_time = 0
