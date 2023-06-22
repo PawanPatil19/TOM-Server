@@ -1,5 +1,8 @@
+import asyncio
 import logging
 import socket
+
+from modules.geoapify_api import geoapify_api
 from modules.maps.direction_data import DirectionData
 from modules.ors_api import ors_api
 from modules.osm_api import osm_api
@@ -30,7 +33,7 @@ async def get_walking_directions(start_time, src_lat, src_lng, dest_lat, dest_ln
             error_message = "Failed to resolve hostname. Please check your internet connection."
         elif isinstance(e, socket.error):
             error_message = "Failed to connect to the server. Please check your internet connection."
-        logging.error("FindLocations: %s", error_message)
+        logging.error("get_directions: %s", error_message)
         direction_data.error_message = error_message
 
     return direction_data
@@ -54,5 +57,39 @@ async def get_locations(search_text, option):
             error_message = "Failed to resolve hostname. Please check your internet connection."
         elif isinstance(e, socket.error):
             error_message = "Failed to connect to the server. Please check your internet connection."
-        logging.error("FindLocations: %s", error_message)
+        logging.error("get_locations: %s", error_message)
         return list()
+
+
+async def get_static_maps(coordinates, size, option):
+    try:
+        if option == 0:
+            return await geoapify_api.find_static_maps_geoapify(coordinates, size)
+        elif option == 1:
+            return await google_api.find_static_maps_google(coordinates, size)
+    except Exception as e:
+        error_message = str(e)
+        if isinstance(e, ApiError):
+            error_message = "Google Maps API error occurred. Please try again later."
+        elif isinstance(e, socket.timeout):
+            error_message = "Connection timed out. Please check your internet connection."
+        elif isinstance(e, socket.gaierror):
+            error_message = "Failed to resolve hostname. Please check your internet connection."
+        elif isinstance(e, socket.error):
+            error_message = "Failed to connect to the server. Please check your internet connection."
+        logging.error("get_static_maps: %s", error_message)
+
+
+print(asyncio.run(get_static_maps([
+    (1.293749, 103.775822),
+    (1.293690, 103.775317),
+    (1.2932756, 103.7750778),
+    (1.292167, 103.774453),
+    (1.292328, 103.773825),
+    (1.293184, 103.772804),
+    (1.293415, 103.772192),
+    (1.293698, 103.772195),
+    (1.293942, 103.772308),
+    (1.294275, 103.772697),
+    (1.294361, 103.772605)
+], (600, 400), 0)))

@@ -27,6 +27,7 @@ A server for TOM
 - create new conda environment `tom` using `conda env create -f environment-cpu.yml`
 - activate `tom` environment, `conda activate tom`
 - create a file `credential/fitbit_credential.json` with Fitbit credentials such as `{"client_id": "ID","client_secret": "SECRET"}` (Note: json format must be correct) 
+- create a file `credential/geoapify_credential.json` with Geoapify credentials such as `{"map_api_key": "KEY"}` (Note: json format must be correct)
 - create a file `credential/google_credential.json` with Google credentials such as `{"map_api_key": "KEY"}` (Note: json format must be correct)
 - create a file `credential/ors_credential.json` with Openrouteservice credentials such as `{"map_api_key": "KEY"}` (Note: json format must be correct)
 - create a file `credential/openai_credential.json` with OpenAI credentials such as `{"openai_api_key": "KEY"}` (Note: json format must be correct)
@@ -56,6 +57,7 @@ A server for TOM
 - [google-maps](https://developers.google.com/maps/documentation/maps-static/start)
 - [Nominatim OpenStreetMap](https://nominatim.org/release-docs/latest/api/Overview/)
 - [Openrouteservice](https://openrouteservice.org/dev/#/api-docs)
+- [Geoapify](https://apidocs.geoapify.com/)
 - [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics)
 - [Hololens YOLOv4 Object Detection](https://github.com/Interactions-HSG/21-MT-JanickSpirig-HoloLens-ObjectDetection) from [tensorflow-yolov4-tflite](https://github.com/theAIGuysCode/tensorflow-yolov4-tflite)
 

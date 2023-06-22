@@ -1,8 +1,12 @@
+from io import BytesIO
+
 import pytest
+from PIL import Image
 
 from modules.maps.direction_data import DirectionData
 from modules.maps.location_data import LocationData
-from modules.maps.maps import get_locations, get_walking_directions
+from modules.maps.maps import get_locations, get_walking_directions, get_static_maps
+from tests.maps_tests.test_map_util import coordinates, size, compare_images
 
 locations_sample_response_google = [
     LocationData(address='Computing Dr, Singapore', name='The Deck', latitude=1.2944323, longitude=103.7725605),
@@ -40,3 +44,15 @@ async def test_directions_google_success():
     assert response.curr_direction == directions_sample_response_google.curr_direction
     assert response.next_direction == directions_sample_response_google.next_direction
     assert response.error_message == directions_sample_response_google.error_message
+
+
+@pytest.mark.asyncio
+async def test_static_maps_google_success():
+    image_data = await get_static_maps(coordinates, size, 1)
+    actual_image = Image.open(BytesIO(image_data))
+    assert actual_image.size == size
+    assert actual_image.format == 'JPEG'
+
+    expected_image = Image.open("map_images/google/static_map_1.jpeg")
+    similarity = compare_images(actual_image, expected_image, 5)
+    assert similarity > 0.9

@@ -1,8 +1,11 @@
 import json
 import re
 import time
+from io import BytesIO
 
 import googlemaps
+from PIL import Image
+from googlemaps.maps import StaticMapPath, StaticMapMarker
 
 from config import GOOGLE_CREDENTIAL_FILE
 from modules.maps.direction_data import DirectionData
@@ -89,3 +92,25 @@ async def find_directions_google(start_time, src_lat, src_lng, dest_lat, dest_ln
         curr_direction=curr_direction,
         next_direction=next_direction
     )
+
+
+async def find_static_maps_google(coordinates, size):
+    client = get_google_client()
+    path = StaticMapPath(
+        points=coordinates,
+        weight=3,
+        color="red"
+    )
+
+    markers = StaticMapMarker(
+        locations=coordinates, color="blue"
+    )
+
+    static_map = client.static_map(size=size, path=path, format="jpg", markers=markers)
+    static_map_bytes = b"".join(static_map)
+
+    # Uncomment to save image in a jpg file
+    # image = Image.open(BytesIO(static_map_bytes))
+    # image.save("static_map_1.jpeg", format="JPEG", quality=100)
+
+    return static_map_bytes
