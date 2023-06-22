@@ -2,7 +2,7 @@ import pytest
 
 from modules.maps.direction_data import DirectionData
 from modules.maps.location_data import LocationData
-from modules.maps.maps import get_locations, get_directions
+from modules.maps.maps import get_locations, get_walking_directions
 
 locations_sample_response_google = [
     LocationData(address='Computing Dr, Singapore', name='The Deck', latitude=1.2944323, longitude=103.7725605),
@@ -26,7 +26,7 @@ async def test_locations_google_success():
 
 @pytest.mark.asyncio
 async def test_directions_google_success():
-    response = await get_directions(1.2936937, 103.7752589, 1.293326, 103.7715489, 1)
+    response = await get_walking_directions(1.2936937, 103.7752589, 1.293326, 103.7715489, 1)
     assert response.start_time == directions_sample_response_google.start_time
     assert response.dest_dist == directions_sample_response_google.dest_dist
     assert response.dest_dist_str == directions_sample_response_google.dest_dist_str

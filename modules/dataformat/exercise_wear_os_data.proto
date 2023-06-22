@@ -1,0 +1,21 @@
+syntax = "proto2";
+
+message ExerciseWearOsData {
+  optional int64 start_time = 1 [default = -1];
+  optional int64 update_time = 2 [default = -1];
+  optional int64 duration = 3 [default = -1];
+  optional double curr_lat = 4 [default = 0];
+  optional double curr_lng = 5 [default = 0];
+  optional double dest_lat = 6 [default = 0];
+  optional double dest_lng = 7 [default = 0];
+  optional int32 bearing = 8 [default = -1];
+  optional double distance = 9 [default = -1];
+  optional double calories = 10 [default = -1];
+  optional double heart_rate = 11 [default = -1];
+  optional double heart_rate_avg = 12 [default = -1];
+  optional int32 steps = 13 [default = -1];
+  optional double speed = 14 [default = -1];
+  optional double speed_avg = 15 [default = -1];
+  optional string current_status = 16 [default = ""];
+  optional string exercise_type = 17 [default = ""];
+}

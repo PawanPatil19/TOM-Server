@@ -7,12 +7,9 @@ from modules.google_api import google_api
 from googlemaps.exceptions import ApiError
 
 
-async def get_directions(src_lat, src_lng, dest_lat, dest_lng, option, ors_option=0):
+async def get_walking_directions(start_time, src_lat, src_lng, dest_lat, dest_lng, bearing, option, ors_option=0):
     direction_data = DirectionData()
     try:
-        # TODO: get data from exercise_sensor_data
-        start_time = 0
-        bearing = 0
         if option == 0:
             # Use OpenRouteService API
             direction_data = await ors_api.find_directions_ors(start_time, src_lat, src_lng, dest_lat, dest_lng,

@@ -49,7 +49,7 @@ async def find_directions_ors(start_time, src_lat, src_lng, dest_lat, dest_lng, 
     dest_dist = summary["distance"]
     dest_duration = summary["duration"]
     steps = segments[0]["steps"]
-    print("Steps:", steps)
+    # print("Steps:", steps)
 
     curr_step = steps[0]
     curr_dist = curr_step["distance"]

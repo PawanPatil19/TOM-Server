@@ -8,7 +8,7 @@ import modules.google_api.google_api as google_api
 import modules.hololens.hololens_portal as hololens_portal
 import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
-from modules.dataformat import exercise_sensor_data_pb2
+from modules.dataformat import exercise_wear_os_data_pb2
 from modules.dataformat import socket_data_pb2
 from modules.dataformat import running_data_pb2
 from modules.dataformat import summary_data_pb2
@@ -38,6 +38,7 @@ class DisplayPosition(Enum):
 
 flag_is_running = False
 
+
 def send_socket_server(data):
     print(data)
     socket_server.send_data(data)
@@ -62,6 +63,12 @@ def start_wearos(real_wearos):
     start_place_lat = 1.294791
     start_place_lng = 103.7609882
     temp_count = 0
+
+    curr_lat = start_place_lat
+    curr_lng = start_place_lng
+    dest_lat = 0.0
+    dest_lng = 0.0
+    bearing = 0
 
     while flag_is_running:
         total_sec = (time_utility.get_current_millis() - start_time) / 1000
@@ -96,15 +103,20 @@ def start_wearos(real_wearos):
 
         # actual data
         if real_wearos:
-            exercise_sensor_data = get_decoded_wearos_data(socket_data)
+            exercise_wear_os_data = get_decoded_wearos_data(socket_data)
 
-            if exercise_sensor_data is not None:
+            if exercise_wear_os_data is not None:
                 avg_speed = 0.0
-                if exercise_sensor_data.speed_avg > 0:
-                    avg_speed = 1000 / (60 * exercise_sensor_data.speed_avg)  # min/km
-                curr_distance = exercise_sensor_data.distance / 1000  # km
-                curr_heart_rate = exercise_sensor_data.heart_rate
-                exercise_type = exercise_sensor_data.exercise_type
+                if exercise_wear_os_data.speed_avg > 0:
+                    avg_speed = 1000 / (60 * exercise_wear_os_data.speed_avg)  # min/km
+                curr_distance = exercise_wear_os_data.distance / 1000  # km
+                curr_heart_rate = exercise_wear_os_data.heart_rate
+                exercise_type = exercise_wear_os_data.exercise_type
+                curr_lat = exercise_wear_os_data.curr_lat
+                curr_lng = exercise_wear_os_data.curr_lng
+                dest_lat = exercise_wear_os_data.dest_lat
+                dest_lng = exercise_wear_os_data.dest_lng
+                bearing = exercise_wear_os_data.bearing
 
                 running_data_proto = running_data_pb2.RunningData(
                     distance=f'{curr_distance:.2f}',
@@ -193,18 +205,18 @@ def get_decoded_wearos_data(socket_data):
         data_type = socket_data_msg.data_type
         data = socket_data_msg.data
 
-        # Check if data received is exercise_sensor_data protobuf type
-        if data_type == DataTypes.EXERCISE_SENSOR_DATA:
+        # Check if data received is exercise_wear_os_data protobuf type
+        if data_type == DataTypes.EXERCISE_WEAR_OS_DATA:
             try:
-                exercise_sensor_data = exercise_sensor_data_pb2.ExerciseSensorData()
-                exercise_sensor_data.ParseFromString(data)
+                exercise_wear_os_data = exercise_wear_os_data_pb2.ExerciseWearOsData()
+                exercise_wear_os_data.ParseFromString(data)
 
-                return exercise_sensor_data
+                return exercise_wear_os_data
             except DecodeError:
-                # Not a valid exercise_sensor_data protobuf message
+                # Not a valid exercise_wear_os_data protobuf message
                 return None
         else:
-            # Not an exercise_sensor_data protobuf message
+            # Not an exercise_wear_os_data protobuf message
             return None
     except DecodeError:
         # Not a valid socket_data protobuf message

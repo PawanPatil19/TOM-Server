@@ -32,3 +32,4 @@ dependencies:
       - langchain==0.0.*
       - roboflow==1.0.*
       - googlemaps=4.10.*
+      - openrouteservice==2.3.*

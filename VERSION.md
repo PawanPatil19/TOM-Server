@@ -8,6 +8,10 @@
 
 ### v2.0
 - new UI
+- add Google Maps API for directions, places and static maps
+- add Openrouteservice API for directions
+- add Nominatim OpenStreetMap API for places 
+- add Geoapify API for static maps
 
 
 ## dev/running_coach_demo
