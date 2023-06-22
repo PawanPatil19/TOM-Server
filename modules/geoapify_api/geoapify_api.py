@@ -45,7 +45,6 @@ async def find_static_maps_geoapify(coordinates, size):
 
         return response.content
     else:
-        print(response)
         error_data = json.loads(response.content)
         error_message = error_data.get("message", "Unknown error")
         raise Exception(error_message)
