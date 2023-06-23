@@ -33,3 +33,4 @@ dependencies:
       - roboflow==1.0.*
       - googlemaps=4.10.*
       - openrouteservice==2.3.*
+      - geographiclib==2.0.*

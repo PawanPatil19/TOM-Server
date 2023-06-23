@@ -10,6 +10,7 @@ from googlemaps.maps import StaticMapPath, StaticMapMarker
 from config import GOOGLE_CREDENTIAL_FILE
 from modules.maps.direction_data import DirectionData
 from modules.maps.location_data import LocationData
+from modules.maps.maps_util import calculate_bearing_after, calculate_turn_angle
 
 KEY_MAP_API = 'map_api_key'
 
@@ -34,9 +35,12 @@ def get_google_client():
     return googlemaps.Client(key=get_google_credential(KEY_MAP_API))
 
 
-async def find_locations_google(search_text):
+async def find_locations_google(search_text, location=None):
     client = get_google_client()
-    response = client.places(query=search_text)
+    params = {"query": search_text}
+    if location is not None:
+        params["location"] = location
+    response = client.places(**params)
 
     location_data_list = []
     for result in response["results"]:
@@ -68,14 +72,27 @@ async def find_directions_google(start_time, src_lat, src_lng, dest_lat, dest_ln
     dest_dist_str = leg['distance']['text']
     dest_duration = leg['duration']['value']
     dest_duration_str = leg['duration']['text']
+    
     curr_dist = leg['steps'][0]['distance']['value']
     curr_dist_str = leg['steps'][0]['distance']['text']
     curr_duration = leg['steps'][0]['duration']['value']
     curr_duration_str = leg['steps'][0]['duration']['text']
     curr_instr = leg['steps'][0]['html_instructions']
-    # TODO: to change this to use haversine formula instead to calculate bearing
-    curr_direction = leg['steps'][0]['maneuver'] if 'maneuver' in leg['steps'][0] else 'straight'
-    next_direction = leg['steps'][1]['maneuver'] if len(leg['steps']) > 1 and 'maneuver' in leg['steps'][1] else None
+    curr_step_end_lat = leg['steps'][0]['end_location']['lat']
+    curr_step_end_lng = leg['steps'][0]['end_location']['lng']
+    curr_bearing_after = calculate_bearing_after(src_lat, src_lng, curr_step_end_lat, curr_step_end_lng)
+    curr_direction = calculate_turn_angle(bearing, curr_bearing_after)
+    
+    next_direction = None
+    if len(leg['steps']) > 1:
+        next_step_start_location = leg['steps'][1]['start_location']
+        next_step_end_location = leg['steps'][1]['end_location']
+        next_step_start_lat = next_step_start_location['lat']
+        next_step_start_lng = next_step_start_location['lng']
+        next_step_end_lat = next_step_end_location['lat']
+        next_step_end_lng = next_step_end_location['lng']
+        next_bearing_after = calculate_bearing_after(next_step_start_lat, next_step_start_lng, next_step_end_lat, next_step_end_lng)
+        next_direction = calculate_turn_angle(curr_bearing_after, next_bearing_after)
 
     return DirectionData(
         start_time=start_time,

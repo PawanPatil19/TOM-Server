@@ -38,14 +38,14 @@ async def get_walking_directions(start_time, src_lat, src_lng, dest_lat, dest_ln
     return direction_data
 
 
-async def get_locations(search_text, option):
+async def get_locations(search_text, option, location=None):
     try:
         if option == 0:
             # Use Nominatim OpenStreetMap API
             return await osm_api.find_locations_osm(search_text)
         elif option == 1:
             # Use Google Maps Places API
-            return await google_api.find_locations_google(search_text)
+            return await google_api.find_locations_google(search_text, location)
     except Exception as e:
         error_message = str(e)
         if isinstance(e, ApiError):
