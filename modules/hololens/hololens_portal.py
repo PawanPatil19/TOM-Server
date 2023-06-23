@@ -1,26 +1,37 @@
 # coding=utf-8
-
+import json
 import modules.utilities.network as network_utility
-from . import hololens_config as hololens_config
+from config import HOLOLENS_CREDENTIAL_FILE
 
 # Note: Need to disable SSL connection (System->Preference)
 
-CREDENTIALS = {
-    'username': hololens_config.DEVICE_PORTAL_USERNAME,
-    'password': hololens_config.DEVICE_PORTAL_PASSWORD
-}
+DEVICE_STREAM_SETTINGS = "holo=true&pv=true&mic=false&loopback=true"
+
+def read_hololens_credential():
+    print('Reading HoloLens credentials')
+    with open(HOLOLENS_CREDENTIAL_FILE, 'r') as f:
+        credential = json.load(f)
+    return credential
+
+
+CREDENTIALS = read_hololens_credential()
+HOLOLENS_IP = CREDENTIALS['ip']
+DEVICE_PORTAL_USERNAME = CREDENTIALS['username']
+DEVICE_PORTAL_PASSWORD = CREDENTIALS['password']
+
+print(f'HOLOLENS_IP: {HOLOLENS_IP}')
 
 # Ref: 
 #	- https://docs.microsoft.com/en-us/windows/mixed-reality/develop/advanced-concepts/device-portal-api-reference
 #	- https://docs.microsoft.com/en-us/windows/uwp/debug-test-perf/device-portal-api-core
-API_BASE = f'https://{hololens_config.HOLOLENS_IP}/api'
+API_BASE = f'https://{HOLOLENS_IP}/api'
 API_START_RECORDING = f'{API_BASE}/holographic/mrc/video/control/start?holo=true&pv=true&mic=true&loopback=true&RenderFromCamera=true'  # POST 
 API_STOP_RECORDING = f'{API_BASE}/holographic/mrc/video/control/stop'  # POST
 API_GET_RECORDINGS = f'{API_BASE}/holographic/mrc/files'  # GET
 API_GET_RECORDING_STATUS = f'{API_BASE}/holographic/mrc/status'  # GET
 API_TAKE_PHOTO = f'{API_BASE}/holographic/mrc/photo?holo=true&pv=true'  # POST
 
-API_STREAM_VIDEO = f'https://{hololens_config.DEVICE_PORTAL_USERNAME}:{hololens_config.DEVICE_PORTAL_PASSWORD}@{hololens_config.HOLOLENS_IP}/api/holographic/stream/live_med.mp4?{hololens_config.DEVICE_STREAM_SETTINGS}'
+API_STREAM_VIDEO = f'https://{DEVICE_PORTAL_USERNAME}:{DEVICE_PORTAL_PASSWORD}@{HOLOLENS_IP}/api/holographic/stream/live_med.mp4?{DEVICE_STREAM_SETTINGS}'
 
 # return True if success else False
 def start_recording():
