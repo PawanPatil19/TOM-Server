@@ -1,15 +1,17 @@
-﻿import random
+﻿import asyncio
+import random
 import threading
-from collections import Counter
-from google.protobuf.message import DecodeError
-from enum import Enum
 import logging
-
 import modules.google_api.google_api as google_api
 import modules.hololens.hololens_portal as hololens_portal
 import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
-from modules.dataformat import exercise_wear_os_data_pb2
+from collections import Counter
+from config import DIRECTIONS_OPTION, ORS_OPTION
+from enum import Enum
+from google.protobuf.message import DecodeError
+from modules.maps import maps
+from modules.dataformat import exercise_wear_os_data_pb2, direction_data_pb2
 from modules.dataformat import socket_data_pb2
 from modules.dataformat import running_data_pb2
 from modules.dataformat import summary_data_pb2
@@ -109,6 +111,30 @@ def start_wearos(real_wearos):
             curr_distance = decoded_data.distance / 1000  # km
             curr_heart_rate = decoded_data.heart_rate
             exercise_type = decoded_data.exercise_type
+            curr_lat = decoded_data.curr_lat
+            curr_lng = decoded_data.curr_lng
+            dest_lat = decoded_data.dest_lat
+            dest_lng = decoded_data.dest_lng
+            bearing = decoded_data.bearing
+
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(
+                get_directions_real(start_time, curr_lat, curr_lng, dest_lat, dest_lng, bearing, DIRECTIONS_OPTION,
+                                    ORS_OPTION))
+            loop.close()
+
+            direction_data_proto = direction_data_pb2.DirectionData(
+                dest_dist=result.dest_dist_str,
+                dest_duration=result.dest_duration_str,
+                curr_dist=result.curr_dist_str,
+                curr_duration=result.curr_duration_str,
+                curr_instr=result.curr_instr,
+                curr_direction=str(result.curr_direction),
+                next_direction=str(result.next_direction),
+            )
+            direction_data_bytes = wrap_message_with_metadata(direction_data_proto, DataTypes.DIRECTION_DATA)
+            send_socket_server(direction_data_bytes)
 
             running_data_proto = running_data_pb2.RunningData(
                 distance=f'{curr_distance:.2f}',
@@ -117,8 +143,7 @@ def start_wearos(real_wearos):
                 duration=time_utility.get_hh_mm_ss_format(int(total_sec)),
                 time=time_utility.get_date_string("%I:%M %p"),
             )
-            running_data_bytes = wrap_message_with_metadata(running_data_proto,
-                                                            DataTypes.RUNNING_DATA)
+            running_data_bytes = wrap_message_with_metadata(running_data_proto, DataTypes.RUNNING_DATA)
             send_socket_server(running_data_bytes)
 
 
@@ -229,7 +254,7 @@ def decode_exercise_data(data):
 
         return DataTypes.EXERCISE_WEAR_OS_DATA, exercise_wear_os_data
     except DecodeError:
-        logging.error('Received data is not a valid exercise_sensor_data protobuf message')
+        logging.error('Received data is not a valid exercise_wear_os_data protobuf message')
         return None, None
 
 
@@ -258,7 +283,13 @@ next_reset_time = 0
 reset_direction = False
 
 
-def get_directions(total_sec):
+async def get_directions_real(start_time, curr_lat, curr_lng, dest_lat, dest_lng, bearing, option, ors_option=0):
+    result = await maps.get_walking_directions(start_time, curr_lat, curr_lng, dest_lat, dest_lng, bearing, option,
+                                               ors_option)
+    return result
+
+
+def get_directions_mock(total_sec):
     global last_update_time, next_reset_time, reset_direction
 
     directions = ''
@@ -268,7 +299,7 @@ def get_directions(total_sec):
         if rand_dir == 1:
             directions = 'ANGLE|0,INSTRUCT|Turn Left,'
         elif rand_dir == 2:
-            directions = 'ANGLE|90,INSTRUCT|Go Strait,'
+            directions = 'ANGLE|90,INSTRUCT|Go Straight,'
         elif rand_dir == 3:
             directions = 'ANGLE|180,INSTRUCT|Turn Right,'
         else:

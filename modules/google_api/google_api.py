@@ -73,6 +73,7 @@ async def find_directions_google(start_time, src_lat, src_lng, dest_lat, dest_ln
     curr_duration = leg['steps'][0]['duration']['value']
     curr_duration_str = leg['steps'][0]['duration']['text']
     curr_instr = leg['steps'][0]['html_instructions']
+    # TODO: to change this to use haversine formula instead to calculate bearing
     curr_direction = leg['steps'][0]['maneuver'] if 'maneuver' in leg['steps'][0] else 'straight'
     next_direction = leg['steps'][1]['maneuver'] if len(leg['steps']) > 1 and 'maneuver' in leg['steps'][1] else None
 

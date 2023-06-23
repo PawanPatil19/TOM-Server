@@ -59,7 +59,7 @@ async def find_directions_ors(start_time, src_lat, src_lng, dest_lat, dest_lng, 
     # curr_bearing_before = curr_maneuver["bearing_before"]
     curr_bearing_before = bearing
     curr_bearing_after = curr_maneuver["bearing_after"]
-    curr_direction = maps_util.get_directions_from_bearings(curr_bearing_before, curr_bearing_after)
+    curr_direction = maps_util.calculate_turn_angle(curr_bearing_before, curr_bearing_after)
 
     next_direction = None
     if len(steps) > 1:
@@ -67,7 +67,7 @@ async def find_directions_ors(start_time, src_lat, src_lng, dest_lat, dest_lng, 
         next_maneuver = next_step["maneuver"]
         next_bearing_before = next_maneuver["bearing_before"]
         next_bearing_after = next_maneuver["bearing_after"]
-        next_direction = maps_util.get_directions_from_bearings(next_bearing_before, next_bearing_after)
+        next_direction = maps_util.calculate_turn_angle(next_bearing_before, next_bearing_after)
     return DirectionData(
         start_time=start_time,
         update_time=int(time.time() * 1000),
