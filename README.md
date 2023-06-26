@@ -24,7 +24,7 @@ A server for TOM
 
 ## Installation
 - Install `conda` (e.g., [Anaconda](https://docs.anaconda.com/anaconda/install/)/[Miniconda](https://docs.conda.io/en/latest/miniconda.html))
-- Create new conda environment `tom` using `conda env create -f environment-cpu.yml`
+- Create new conda environment `tom` using `conda env create -f environment-cpu.yml` (If you have a previous environment, then remove it first; `conda remove -n tom --all`)
 - Activate `tom` environment, `conda activate tom`
 - Download the pretrained weights for YOLOv8 from [ultralytics](https://github.com/ultralytics/ultralytics) (e.g., [yolov8n.pt](https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt)) and copy it to `modules/yolov8/weights/` and rename it as `model.pt` (i.e., `modules/yolov8/weights/model.pt`)
 - Create the required credential files inside `credential` folder. Please refer to [Third-party libraries](##Third-party-libraries) section to obtain credentials. (Note: json format must be correct)
@@ -46,7 +46,7 @@ A server for TOM
 ## Adding third-party libraries
 - Add the links of libraries/reference/API docs to [Third-party libraries](#Third-party-libraries) section
 - If credentials are required, add the instructions to [Installation](#Installation) section
-- Update the `environment-cpu.yml` file with the new library and version details
+- Update the [environment-cpu.yml](environment-cpu.yml) file with the new library and version details
 - Update [VERSION](VERSION.md) file with added capabilities/changes
 
 
