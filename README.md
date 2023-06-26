@@ -44,8 +44,8 @@ A server for TOM
 
 
 ## Adding third-party libraries
-- Add the links of libraries/reference/API docs to [Third-party libraries](##Third-party-libraries) section
-- If credentials are required, add the instructions to [Installation](##Installation) section
+- Add the links of libraries/reference/API docs to [Third-party libraries](#Third-party-libraries) section
+- If credentials are required, add the instructions to [Installation](#Installation) section
 - Update the `environment-cpu.yml` file with the new library and version details
 - Update [VERSION](VERSION.md) file with added capabilities/changes
 
@@ -72,4 +72,4 @@ A server for TOM
 - [Geoapify](https://apidocs.geoapify.com/)
 - [GeographicLib](https://geographiclib.sourceforge.io/html/python/code.html)
 - [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics)
-- [Hololens YOLOv4 Object Detection](https://github.com/Interactions-HSG/21-MT-JanickSpirig-HoloLens-ObjectDetection) from [tensorflow-yolov4-tflite](https://github.com/theAIGuysCode/tensorflow-yolov4-tflite)
+- [Hololens YOLOv4 Object Detection](https://github.com/Interactions-HSG/21-MT-JanickSpirig-HoloLens-ObjectDetection)
