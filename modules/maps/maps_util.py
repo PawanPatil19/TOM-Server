@@ -11,3 +11,7 @@ def calculate_turn_angle(bearing_before, bearing_after):
 # from https://stackoverflow.com/a/54875237/18753727
 def calculate_bearing_after(src_lat, src_lng, dest_lat, dest_lng):
     return int(Geodesic.WGS84.Inverse(src_lat, src_lng, dest_lat, dest_lng)['azi1'])
+
+
+def calculate_distance(lat1, lng1, lat2, lng2):
+    return Geodesic.WGS84.Inverse(lat1, lng1, lat2, lng2)['s12']

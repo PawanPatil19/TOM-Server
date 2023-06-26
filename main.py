@@ -7,10 +7,10 @@ import modules.hololens.hololens_portal as hololens_portal
 import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
 from collections import Counter
-from config import DIRECTIONS_OPTION, ORS_OPTION
+from config import DIRECTIONS_OPTION, ORS_OPTION, STATIC_MAPS_OPTION
 from enum import Enum
 from google.protobuf.message import DecodeError
-from modules.maps import maps
+from modules.maps import maps, maps_util
 from modules.dataformat import exercise_wear_os_data_pb2, direction_data_pb2
 from modules.dataformat import socket_data_pb2
 from modules.dataformat import running_data_pb2
@@ -18,6 +18,7 @@ from modules.dataformat import summary_data_pb2
 from modules.dataformat import request_data_pb2
 from modules.dataformat import type_position_mapping_data_pb2
 from modules.dataformat.data_types import DataTypes
+from modules.maps.maps import get_static_maps
 from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
 from modules.langchain_llm.LangChainTextGenerator import LangChainTextGenerator as TextGenerator
 
@@ -67,6 +68,7 @@ def start_wearos(real_wearos):
     start_place_lat = 1.294791
     start_place_lng = 103.7609882
     temp_count = 0
+    coords = []
 
     while flag_is_running:
         total_sec = (time_utility.get_current_millis() - start_time) / 1000
@@ -117,6 +119,9 @@ def start_wearos(real_wearos):
             dest_lng = decoded_data.dest_lng
             bearing = decoded_data.bearing
 
+            if (curr_lat, curr_lng) not in coords:
+                coords.append((curr_lat, curr_lng))
+
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             result = loop.run_until_complete(
@@ -160,11 +165,16 @@ def start_wearos(real_wearos):
             send_socket_server(running_data_bytes)
 
         elif socket_data_type == DataTypes.REQUEST_SUMMARY_DATA:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            image_bytes = loop.run_until_complete(get_static_maps(coords, (600, 400), STATIC_MAPS_OPTION))
+            loop.close()
             summary_data_proto = summary_data_pb2.SummaryData(
                 detail=f'{exercise_type} at {start_place} on {start_time_string}',
                 distance=f'{curr_distance:.2f}',
                 speed=f'{avg_speed:.2f}',
                 duration=time_utility.get_hh_mm_ss_format(int(total_sec)),
+                image=image_bytes
             )
             summary_data_bytes = wrap_message_with_metadata(summary_data_proto,
                                                             DataTypes.SUMMARY_DATA)

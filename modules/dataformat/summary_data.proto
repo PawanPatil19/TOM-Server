@@ -5,4 +5,5 @@ message SummaryData {
   optional string distance = 2 [default = ""];
   optional string speed = 3 [default = ""];
   optional string duration = 4 [default = ""];
+  optional bytes image = 5;
 }
