@@ -126,6 +126,8 @@ class VideoDetection:
             print("Error : Could not get FPS")
             return
 
+        print(f"Camera FPS:{camera_fps}, width:{frame_width}, height:{frame_height}")
+
         # to save the video
         if self.save:
             writer = cv2.VideoWriter(self.savePath,
