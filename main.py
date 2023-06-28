@@ -45,7 +45,7 @@ flag_is_running = False
 
 
 def send_socket_server(data):
-    print(data)
+    # print(data)
     socket_server.send_data(data)
 
 
@@ -69,6 +69,9 @@ def start_wearos(real_wearos):
     start_place_lng = 103.7609882
     temp_count = 0
     coords = []
+
+    if not real_wearos:
+        coords.append((start_place_lat, start_place_lng))
 
     while flag_is_running:
         total_sec = (time_utility.get_current_millis() - start_time) / 1000

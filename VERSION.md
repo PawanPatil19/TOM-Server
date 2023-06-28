@@ -41,4 +41,4 @@
 - remove saving token, e.g., `fitbit_credential.json`, `fitbit_token.json`
 
 ## Known issues/limitations
-- 
+- change print to logging
