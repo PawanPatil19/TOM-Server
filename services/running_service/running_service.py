@@ -3,6 +3,7 @@ from enum import Enum
 
 import modules.utilities.time as time_utility
 from modules.dataformat.data_types import DataTypes
+from services.running_service.running_current_data import CurrentData
 from . import running_data_handler as running_data_handler
 
 
@@ -15,25 +16,6 @@ class SpeedTrainingStats:
     distance_interval = 400  # meters
     time_info_active = 5  # secs
     training_speed_tolerance = 0.5  # min/km
-
-
-class CurrentData:
-    curr_heart_rate = 0
-    curr_distance = 0.0
-    avg_speed = 0.0
-
-    start_time = time_utility.get_current_millis()
-    start_time_string = time_utility.get_date_string("%d %B %I:%M %p")
-    start_place = 'NUS'
-    exercise_type = 'Running'
-
-    curr_lat = 0.0
-    curr_lng = 0.0
-    dest_lat = 0.0
-    dest_lng = 0.0
-
-    coords = []
-    map_size = (600, 400)
 
 
 def get_exercise_data(real_wearos):

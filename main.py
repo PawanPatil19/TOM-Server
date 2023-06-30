@@ -5,18 +5,10 @@ import modules.websocket_server.socket_server as socket_server
 from collections import Counter
 from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
 from modules.langchain_llm.LangChainTextGenerator import LangChainTextGenerator as TextGenerator
+from services.running_service.running_current_data import CurrentData
 from services.running_service.running_service import get_exercise_data, start_training, RunningTrainingMode
 
 flag_is_running = False
-
-
-def send_socket_server(data):
-    print(data)
-    socket_server.send_data(data)
-
-
-def get_socket_data():
-    return socket_server.receive_data()
 
 
 def start_running_service():
@@ -31,6 +23,15 @@ def start_running_service():
 
 def start_wearos(real_wearos):
     global flag_is_running
+    
+    CurrentData.reset_values()
+    
+    if not real_wearos:
+        CurrentData.curr_lat = 51.5310555
+        CurrentData.curr_lng = -0.1272269
+        CurrentData.dest_lat = 51.5305625
+        CurrentData.dest_lng = -0.1238843
+        CurrentData.coords.append((CurrentData.curr_lat, CurrentData.curr_lng))
 
     while flag_is_running:
         get_exercise_data(real_wearos)
