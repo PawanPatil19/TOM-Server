@@ -52,7 +52,7 @@ def get_exercise_data(real_wearos):
                                                  CurrentData.dest_lat, CurrentData.dest_lng, CurrentData.bearing)
 
     elif socket_data_type == DataTypes.REQUEST_SUMMARY_DATA:
-        image = running_data_handler.get_static_maps_image(CurrentData.coords, CurrentData.map_size)
+        image = running_data_handler.get_static_maps_image()
         running_data_handler.send_summary_data(CurrentData.exercise_type, CurrentData.start_place,
                                                CurrentData.start_time_string, CurrentData.curr_distance,
                                                CurrentData.avg_speed,

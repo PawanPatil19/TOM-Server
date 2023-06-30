@@ -278,10 +278,13 @@ def get_directions_mock(total_sec):
     return directions
 
 
-def get_static_maps_image(coords, size):
+def get_static_maps_image():
+    # get the last known coordinates if not already in the list
+    if (CurrentData.curr_lat, CurrentData.curr_lng) not in CurrentData.coords:
+        CurrentData.coords.append((CurrentData.curr_lat, CurrentData.curr_lng))
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     image_bytes = loop.run_until_complete(
-        get_static_maps(coords, size, STATIC_MAPS_OPTION))
+        get_static_maps(CurrentData.coords, CurrentData.map_size, STATIC_MAPS_OPTION))
     loop.close()
     return image_bytes
