@@ -7,31 +7,31 @@ from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
 from modules.langchain_llm.LangChainTextGenerator import LangChainTextGenerator as TextGenerator
 from services.running_service.running_current_data import CurrentData
 from services.running_service.running_data_handler import save_mock_coords
-from services.running_service.running_service import get_exercise_data, start_training, RunningTrainingMode
+from services.running_service.running_service import get_exercise_data, get_training_update, RunningTrainingMode
 
 flag_is_running = False
+start_lat = 51.5310555
+start_lng = -0.1272269
+dest_lat = 51.5305625
+dest_lng = -0.1238843
 
 
 def start_running_service():
-    global flag_is_running
+    global flag_is_running, start_lat, start_lng, dest_lat, dest_lng
     training_mode = RunningTrainingMode.SpeedTraining
-    training_route = []
+    training_route = [(start_lat, start_lng), (dest_lat, dest_lng)]
     target_speed = 8  # min/km
 
-    if flag_is_running:
-        start_training(training_mode, training_route, target_speed)
+    while flag_is_running:
+        get_training_update(training_mode, training_route, target_speed)
 
 
 def start_wearos(real_wearos):
-    global flag_is_running
-    
+    global flag_is_running, start_lat, start_lng, dest_lat, dest_lng
+
     CurrentData.reset_values()
-    
+
     if not real_wearos:
-        start_lat = 51.5310555
-        start_lng = -0.1272269
-        dest_lat = 51.5305625
-        dest_lng = -0.1238843
         save_mock_coords(start_lat, start_lng, dest_lat, dest_lng)
 
     while flag_is_running:
@@ -39,7 +39,8 @@ def start_wearos(real_wearos):
 
 
 def start_wearos_threaded(wearos_real):
-    server_thread = threading.Thread(target=start_wearos, args=(wearos_real,), daemon=True)
+    server_thread = threading.Thread(
+        target=start_wearos, args=(wearos_real,), daemon=True)
     server_thread.start()
 
 

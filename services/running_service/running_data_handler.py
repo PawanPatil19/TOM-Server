@@ -132,16 +132,25 @@ def save_real_coords():
 ##############################################################################################################
 
 
-def send_running_data(distance, heart_rate, speed, duration):
-    running_data_proto = running_data_pb2.RunningData(
-        distance=f'{distance:.2f}',
-        heart_rate=f'{int(heart_rate)}',
-        speed=f'{speed:.2f}',
-        duration=time_utility.get_hh_mm_ss_format(int(duration)),
-        time=time_utility.get_date_string("%I:%M %p"),
-    )
-    running_data_bytes = wrap_message_with_metadata(
-        running_data_proto, DataTypes.RUNNING_DATA)
+def send_running_data(distance=None, heart_rate=None, speed=None, duration=None, include_time=None):
+    running_data_proto = running_data_pb2.RunningData()
+
+    if distance is not None:
+        running_data_proto.distance = f'{distance:.2f}'
+
+    if heart_rate is not None:
+        running_data_proto.heart_rate = f'{int(heart_rate)}'
+
+    if speed is not None:
+        running_data_proto.speed = f'{speed:.2f}'
+
+    if duration is not None:
+        running_data_proto.duration = time_utility.get_hh_mm_ss_format(int(duration))
+
+    if include_time is True:
+        running_data_proto.time = time_utility.get_date_string("%I:%M %p")
+
+    running_data_bytes = wrap_message_with_metadata(running_data_proto, DataTypes.RUNNING_DATA)
     send_socket_server(running_data_bytes)
 
 
