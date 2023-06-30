@@ -1,5 +1,6 @@
 import random
 from enum import Enum
+from modules.maps.maps_util import calculate_distance
 
 import modules.utilities.time as time_utility
 from modules.dataformat.data_types import DataTypes
@@ -27,9 +28,7 @@ def get_exercise_data(real_wearos):
 
     # mock service
     if not real_wearos:
-        CurrentData.curr_distance += (random.randint(1, 5) / 1000)  # in km
-        CurrentData.curr_heart_rate = random.randint(70, 80)
-        CurrentData.avg_speed = total_min / CurrentData.curr_distance
+        running_data_handler.save_mock_running_data(total_min)
 
     # skip if no data
     if socket_data is None:
@@ -42,19 +41,7 @@ def get_exercise_data(real_wearos):
         return
 
     if socket_data_type == DataTypes.EXERCISE_WEAR_OS_DATA:
-        if decoded_data.speed_avg > 0:
-            CurrentData.avg_speed = 1000 / (60 * decoded_data.speed_avg)  # min/km
-        CurrentData.curr_distance = decoded_data.distance / 1000  # km
-        CurrentData.curr_heart_rate = decoded_data.heart_rate
-        CurrentData.exercise_type = decoded_data.exercise_type
-        CurrentData.curr_lat = decoded_data.curr_lat
-        CurrentData.curr_lng = decoded_data.curr_lng
-        CurrentData.dest_lat = decoded_data.dest_lat
-        CurrentData.dest_lng = decoded_data.dest_lng
-        CurrentData.bearing = decoded_data.bearing
-
-        if (CurrentData.curr_lat, CurrentData.curr_lng) not in CurrentData.coords:
-            CurrentData.coords.append((CurrentData.curr_lat, CurrentData.curr_lng))
+        running_data_handler.save_real_running_data(decoded_data)
 
     elif socket_data_type == DataTypes.REQUEST_RUNNING_DATA:
         running_data_handler.send_running_data(CurrentData.curr_distance, CurrentData.curr_heart_rate,

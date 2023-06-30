@@ -3,6 +3,7 @@ import logging
 import random
 
 from google.protobuf.message import DecodeError
+from modules.maps.maps_util import calculate_distance
 
 import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
@@ -16,6 +17,7 @@ from modules.dataformat import summary_data_pb2
 from modules.dataformat import type_position_mapping_data_pb2
 from modules.dataformat.data_types import DataTypes
 from modules.maps.maps import get_static_maps, get_walking_directions
+from services.running_service.running_current_data import CurrentData
 from services.running_service.running_display import RunningDataDisplayPosition
 
 
@@ -79,10 +81,57 @@ def decode_request_data(request_type, data):
             'Received data is not a valid request_data protobuf message')
         return None, None
 
+##############################################################################################################
+############################################## Saving data ###################################################
+##############################################################################################################
+
+
+def save_mock_running_data(total_min):
+    CurrentData.curr_distance += (random.randint(1, 5) / 1000)  # in km
+    CurrentData.curr_heart_rate = random.randint(70, 80)
+    CurrentData.avg_speed = total_min / CurrentData.curr_distance
+
+
+def save_mock_coords(start_lat, start_lng, dest_lat, dest_lng):
+    CurrentData.curr_lat = start_lat
+    CurrentData.curr_lng = start_lng
+    CurrentData.dest_lat = dest_lat
+    CurrentData.dest_lng = dest_lng
+    CurrentData.coords.append((start_lat, start_lng))
+
+
+def save_real_running_data(decoded_data):
+    if decoded_data.speed_avg > 0:
+        CurrentData.avg_speed = 1000 / (60 * decoded_data.speed_avg)  # min/km
+    CurrentData.curr_distance = decoded_data.distance / 1000  # km
+    CurrentData.curr_heart_rate = decoded_data.heart_rate
+    CurrentData.exercise_type = decoded_data.exercise_type
+    CurrentData.curr_lat = decoded_data.curr_lat
+    CurrentData.curr_lng = decoded_data.curr_lng
+    CurrentData.dest_lat = decoded_data.dest_lat
+    CurrentData.dest_lng = decoded_data.dest_lng
+    CurrentData.bearing = decoded_data.bearing
+    save_real_coords()
+
+
+def save_real_coords():
+    # set a min distance between prev coordinate and current coordinate, in meters
+    # this is to prevent adding points that are too close to each other
+    threshold_distance = 30 
+    if len(CurrentData.coords) > 0:
+        prev_lat, prev_lng = CurrentData.coords[-1]
+
+        distance = calculate_distance(prev_lat, prev_lng, CurrentData.curr_lat, CurrentData.curr_lng)
+        if distance >= threshold_distance:
+            CurrentData.coords.append((CurrentData.curr_lat, CurrentData.curr_lng))
+    else:
+        CurrentData.coords.append((CurrentData.curr_lat, CurrentData.curr_lng))
 
 ##############################################################################################################
 ############################################## Sending data ##################################################
 ##############################################################################################################
+
+
 def send_running_data(distance, heart_rate, speed, duration):
     running_data_proto = running_data_pb2.RunningData(
         distance=f'{distance:.2f}',
