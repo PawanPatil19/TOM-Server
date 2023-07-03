@@ -4,7 +4,6 @@ from enum import Enum
 import modules.utilities.time as time_utility
 from modules.dataformat.data_types import DataTypes
 from services.running_service.running_current_data import CurrentData
-from services.running_service.running_display import RunningDataDisplay
 from . import running_data_handler as running_data_handler
 
 
