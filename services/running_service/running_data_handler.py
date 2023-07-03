@@ -149,7 +149,7 @@ def send_running_data(distance=None, heart_rate=None, speed=None, duration=None,
 
     if include_time is True:
         running_data_proto.time = time_utility.get_date_string("%I:%M %p")
-
+    
     running_data_bytes = wrap_message_with_metadata(running_data_proto, DataTypes.RUNNING_DATA)
     send_socket_server(running_data_bytes)
 
@@ -165,6 +165,15 @@ def send_running_unit(distance='', heart_rate='', speed='', duration='', time=''
     running_unit_bytes = wrap_message_with_metadata(
         running_unit_data_proto, DataTypes.RUNNING_UNIT)
     send_socket_server(running_unit_bytes)
+    
+def send_running_alert(speed=None, distance=None):
+    running_alert_data_proto = running_data_pb2.RunningData(
+        speed=speed,
+        distance=distance,
+    )
+    running_alert_bytes = wrap_message_with_metadata(
+        running_alert_data_proto, DataTypes.RUNNING_ALERT)
+    send_socket_server(running_alert_bytes)
 
 
 def send_direction_data(start_time, curr_lat, curr_lng, dest_lat, dest_lng, bearing):
