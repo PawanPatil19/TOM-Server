@@ -53,8 +53,7 @@ def get_decoded_socket_data(socket_data):
             logging.error('Unknown socket_data protobuf type')
             return data_type, None
     except DecodeError:
-        logging.error(
-            'Received data is not a valid socket_data protobuf message')
+        logging.error('Received data is not a valid socket_data protobuf message')
         return None, None
 
 
@@ -65,8 +64,7 @@ def decode_exercise_wear_os_data(data):
 
         return DataTypes.EXERCISE_WEAR_OS_DATA, exercise_wear_os_data
     except DecodeError:
-        logging.error(
-            'Received data is not a valid exercise_wear_os_data protobuf message')
+        logging.error('Received data is not a valid exercise_wear_os_data protobuf message')
         return None, None
 
 
@@ -101,6 +99,7 @@ def save_mock_coords(start_lat, start_lng, dest_lat, dest_lng):
 
 
 def save_real_running_data(decoded_data):
+    CurrentData.avg_speed = -1.0
     if decoded_data.speed_avg > 0:
         CurrentData.avg_speed = 1000 / (60 * decoded_data.speed_avg)  # min/km
     CurrentData.curr_distance = decoded_data.distance / 1000  # km
@@ -142,7 +141,10 @@ def send_running_data(distance=None, heart_rate=None, speed=None, duration=None,
         running_data_proto.heart_rate = f'{int(heart_rate)}'
 
     if speed is not None:
-        running_data_proto.speed = f'{speed:.2f}'
+        if speed == -1.0:
+            running_data_proto.speed = 'N/A'
+        else:
+            running_data_proto.speed = f'{speed:.2f}'
 
     if duration is not None:
         running_data_proto.duration = time_utility.get_hh_mm_ss_format(int(duration))
@@ -166,10 +168,11 @@ def send_running_unit(distance='', heart_rate='', speed='', duration='', time=''
         running_unit_data_proto, DataTypes.RUNNING_UNIT)
     send_socket_server(running_unit_bytes)
     
-def send_running_alert(speed=None, distance=None):
+def send_running_alert(speed=None, distance=None, instruction=None):
     running_alert_data_proto = running_data_pb2.RunningData(
         speed=speed,
         distance=distance,
+        instruction=instruction,
     )
     running_alert_bytes = wrap_message_with_metadata(
         running_alert_data_proto, DataTypes.RUNNING_ALERT)

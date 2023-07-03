@@ -19,11 +19,11 @@ dest_lng = -0.1238843
 def start_running_service():
     global flag_is_running, start_lat, start_lng, dest_lat, dest_lng
     training_mode = RunningTrainingMode.SpeedTraining
-    training_route = [(start_lat, start_lng), (dest_lat, dest_lng)]
+    start_end_coords = [(start_lat, start_lng), (dest_lat, dest_lng)]
     target_speed = 8  # min/km
 
     while flag_is_running:
-        get_training_update(training_mode, training_route, target_speed)
+        get_training_update(training_mode, start_end_coords, target_speed)
 
 
 def start_wearos(real_wearos):

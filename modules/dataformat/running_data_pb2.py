@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12running_data.proto\"l\n\x0bRunningData\x12\x12\n\x08\x64istance\x18\x01 \x01(\t:\x00\x12\x14\n\nheart_rate\x18\x02 \x01(\t:\x00\x12\x0f\n\x05speed\x18\x03 \x01(\t:\x00\x12\x12\n\x08\x64uration\x18\x04 \x01(\t:\x00\x12\x0e\n\x04time\x18\x05 \x01(\t:\x00')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12running_data.proto\"\x83\x01\n\x0bRunningData\x12\x12\n\x08\x64istance\x18\x01 \x01(\t:\x00\x12\x14\n\nheart_rate\x18\x02 \x01(\t:\x00\x12\x0f\n\x05speed\x18\x03 \x01(\t:\x00\x12\x12\n\x08\x64uration\x18\x04 \x01(\t:\x00\x12\x0e\n\x04time\x18\x05 \x01(\t:\x00\x12\x15\n\x0binstruction\x18\x06 \x01(\t:\x00')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -21,6 +21,6 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'running_data_pb2', _globals
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _globals['_RUNNINGDATA']._serialized_start=22
-  _globals['_RUNNINGDATA']._serialized_end=130
+  _globals['_RUNNINGDATA']._serialized_start=23
+  _globals['_RUNNINGDATA']._serialized_end=154
 # @@protoc_insertion_point(module_scope)
