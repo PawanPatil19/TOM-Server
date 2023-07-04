@@ -18,7 +18,9 @@ class VideoDetection:
             save=False,
             save_path="yolo_video_output.avi",
             object_counter_duration=1,  # set object detection counter duration
-            detection_region=None, # [x1, y1, x2, y2]  the detection region on which detection results should be reported
+            # [x1, y1, x2, y2]  the detection region on which detection results should be reported
+            detection_region=None,
+            
     ):
         self.videoPath = video_path
         self.inference = inference
@@ -38,6 +40,11 @@ class VideoDetection:
             self.object_detection_counter = ObjectDetectionCounter(object_counter_duration)
         else:
             self.object_detection_counter = None
+
+        self.camera_fps = None
+        self.frame_height = None
+        self.frame_width = None
+        self.last_frame = None
 
         print("VideoCapture::__init__()")
         print("OpenCV Version : %s" % (cv2.__version__))
@@ -113,6 +120,10 @@ class VideoDetection:
     def __Run__(self):
         print("VideoCapture::__Run__()")
 
+        camera_fps = None
+        frame_width = None
+        frame_height = None
+
         if self.useStream:
             camera_fps = int(self.stream.stream.get(cv2.CAP_PROP_FPS))
             frame_width = int(self.stream.stream.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -122,11 +133,14 @@ class VideoDetection:
             frame_width = int(self.capture.get(cv2.CAP_PROP_FRAME_WIDTH))
             frame_height = int(self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-        if camera_fps == 0:
+        if camera_fps is None:
             print("Error : Could not get FPS")
             return
 
         print(f"Camera FPS:{camera_fps}, width:{frame_width}, height:{frame_height}")
+        self.camera_fps = camera_fps
+        self.frame_width = frame_width
+        self.frame_height = frame_height
 
         # to save the video
         if self.save:
@@ -157,6 +171,9 @@ class VideoDetection:
             except Exception as e:
                 print("ERROR : Exception during capturing")
                 raise (e)
+
+            # save the last captured frame
+            self.last_frame = frame
 
             #  iou=0.45, max_det=50, verbose=False
             result = model(frame, agnostic_nms=True, conf=self.confidenceLevel, verbose=False)[0]
@@ -223,6 +240,14 @@ class VideoDetection:
 
         if self.save:
             writer.release()
+
+    # return the last captured frame (an image array vector)
+    def get_last_frame(self):
+        return self.last_frame
+
+    # return [camera_fps, frame_width, frame_height, is_stream]
+    def get_source_params(self):
+        return self.camera_fps, self.frame_width, self.frame_height, self.useStream
 
     def intersects(self, xyxy, xyxy_bounds):
         return not (xyxy[2] < xyxy_bounds[0] or xyxy[0] > xyxy_bounds[2] or xyxy[3] < xyxy_bounds[
