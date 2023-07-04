@@ -20,7 +20,7 @@ class VideoDetection:
             object_counter_duration=1,  # set object detection counter duration
             # [x1, y1, x2, y2]  the detection region on which detection results should be reported
             detection_region=None,
-            
+
     ):
         self.videoPath = video_path
         self.inference = inference

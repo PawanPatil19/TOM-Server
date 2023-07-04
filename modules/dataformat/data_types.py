@@ -1,5 +1,9 @@
 class DataTypes:
+
+    # wear os data
     EXERCISE_WEAR_OS_DATA = 1000
+
+    # running data
     RUNNING_DATA = 1001
     RUNNING_UNIT = 1002
     SUMMARY_DATA = 1003
@@ -13,3 +17,9 @@ class DataTypes:
     REQUEST_TYPE_POSITION_MAPPING = 1010
 
     DIRECTION_DATA = 1011
+
+    # learning data
+    LEARNING_DATA = 2001
+    REQUEST_LEARNING_DATA = 2002
+
+    FINGER_POINTING_DATA = 3001
