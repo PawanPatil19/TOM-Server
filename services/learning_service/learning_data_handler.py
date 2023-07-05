@@ -48,6 +48,10 @@ def get_decoded_socket_data(socket_data):
 # return <type, data>
 def decode_finger_pose_data(data):
     try:
+        if isinstance(data, finger_pose_data_pb2.FingerPoseData):
+            print(data)
+            return DataTypes.FINGER_POINTING_DATA, data
+
         finger_pose_data = finger_pose_data_pb2.FingerPoseData()
         finger_pose_data.ParseFromString(data)
 
