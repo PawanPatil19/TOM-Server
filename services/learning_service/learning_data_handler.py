@@ -75,6 +75,16 @@ def is_request_data_type(data_type):
     ]
 
 
+def send_learning_data(instruction="", detail="", speech=""):
+    learning_data_proto = learning_data_pb2.LearningData(
+        instruction=instruction,
+        detail=detail,
+        speech=speech,
+    )
+    learning_data_bytes = wrap_message_with_metadata(learning_data_proto, DataTypes.LEARNING_DATA)
+    send_socket_server(learning_data_bytes)
+
+
 def wrap_message_with_metadata(data, data_type):
     socket_data = socket_data_pb2.SocketData(
         data_type=data_type,
