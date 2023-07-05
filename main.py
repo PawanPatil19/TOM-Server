@@ -284,6 +284,7 @@ def decode_request_data(request_type, data):
     try:
         request_data = request_data_pb2.RequestData()
         request_data.ParseFromString(data)
+        print(f"RequestData: {isinstance(request_data, request_data_pb2.RequestData)}")
 
         return request_type, request_data
     except DecodeError:
@@ -388,7 +389,7 @@ def start_yolo(video_src):
     global flag_is_running
 
     try:
-        with YoloDetector(video_src, save=False) as yoloDetector:
+        with YoloDetector(video_src, save=False, detection_region=[300, 220, 340, 260]) as yoloDetector:
             threading.Thread(target=_monitor_yolo_detection, args=(yoloDetector, 0.6, 1,),
                              daemon=True).start()
             yoloDetector.start()
