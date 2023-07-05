@@ -11,12 +11,12 @@ class ObjectDetectionCounter:
         self.detected_objects = []
         self.detected_times = []
 
-    # detection_results = [[class_label, confidence, bounding_boxes], ...]
-    def infer_counting(self, detection_results):
+    # detection = [[bounding_boxes, mask, confidence, class_id, tracker_id], ...], class_labels = [name1, name2, ...]
+    def infer_counting(self, detections, class_labels):
         current_time = time.time()
         self.detected_times.append(current_time)
 
-        objects = [class_label for class_label, _, _ in detection_results]
+        objects = [class_labels[class_id] for _, _, _, class_id, _ in detections]
         self.detected_objects.append(objects)
 
         index = 0

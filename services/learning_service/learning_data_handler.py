@@ -76,6 +76,7 @@ def is_request_data_type(data_type):
 
 
 def send_learning_data(instruction="", detail="", speech=""):
+    print(f'sending learning data: {instruction}, {detail}, {speech}')
     learning_data_proto = learning_data_pb2.LearningData(
         instruction=instruction,
         detail=detail,

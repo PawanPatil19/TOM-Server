@@ -35,6 +35,7 @@ class VideoDetection:
         self.capture = None
         self.stream = None
         self.last_detection = None
+        self.class_labels = None
 
         if object_counter_duration > 0:
             self.object_detection_counter = ObjectDetectionCounter(object_counter_duration)
@@ -180,44 +181,15 @@ class VideoDetection:
             # [[bounding_boxes, mask, confidence, class_id, tracker_id]
             detections = sv.Detections.from_yolov8(result)
 
-            if self.detection_region is None:
-                # [[class_label, confidence, bounding_boxes]]
-                detection_results = [
-                    [model.model.names[class_id], confidence, bounding_boxes]
-                    for bounding_boxes, _, confidence, class_id, _ in detections
-                ]
-            else:
-                # initialize the list of tracked objects within specified region
-                detection_results = []
-                # initialize a instance of Detection class with empty values
-                detections_in_specified_region = sv.Detections(xyxy=np.empty((0, 4)), mask=None,
-                                                               confidence=np.empty((0,)),
-                                                               class_id=np.empty((0,)),
-                                                               tracker_id=None)
+            # class labels
+            self.class_labels = model.model.names
 
-                # create temporary lists to store the values of xyxy, class_id and confidence of the objects in given region
-                tmp_xyxy = []
-                tmp_class_id = []
-                tmp_confidence = []
-                for detection in detections:
-                    # add to detection_results only if the object is in the specified region
-                    # if detection[0][0] > self.detection_region[0] and detection[0][1] > self.detection_region[1] and detection[0][2] < self.detection_region[2] and detection[0][3] < self.detection_region[3]:
-                    if self.intersects(detection[0], self.detection_region):
-                        detection_results.append(
-                            [model.model.names[detection[3]], detection[2], detection[0]])
-                        tmp_xyxy.append(detection[0])
-                        tmp_class_id.append(detection[3])
-                        tmp_confidence.append(detection[2])
+            # only consider the detections in the selected region, also see https://roboflow.github.io/supervision/quickstart/detections/
+            if self.detection_region is not None:
+                detections = self.get_detection_in_region(detections, self.detection_region)
 
-                detections_in_specified_region.xyxy = np.array(tmp_xyxy)
-                detections_in_specified_region.class_id = np.array(tmp_class_id)
-                detections_in_specified_region.confidence = np.array(tmp_confidence)
-
-                # replace the original detections with filtered detections
-                detections = detections_in_specified_region
-
-            labels = [f'{class_label} {confidence:0.2f}' for class_label, confidence, _ in
-                      detection_results]
+            labels = [f'{self.class_labels[class_id]} {confidence:0.2f}' for
+                      _, _, confidence, class_id, _ in detections]
 
             frame = box_annotator.annotate(
                 scene=frame,
@@ -226,9 +198,9 @@ class VideoDetection:
             )
 
             if self.object_detection_counter:
-                self.object_detection_counter.infer_counting(detection_results)
+                self.object_detection_counter.infer_counting(detections, self.class_labels)
 
-            self.last_detection = detection_results
+            self.last_detection = detections
 
             if self.save:
                 writer.write(frame)
@@ -241,6 +213,41 @@ class VideoDetection:
         if self.save:
             writer.release()
 
+    # return results in the format of [[class_label, confidence, bounding_boxes]] from the detections in the format of [[bounding_boxes, mask, confidence, class_id, tracker_id]]
+    @staticmethod
+    def get_detection_results(detections, model_class_names):
+        detection_results = [
+            [model_class_names[class_id], confidence, bounding_boxes]
+            for bounding_boxes, _, confidence, class_id, _ in detections
+        ]
+        return detection_results
+
+    @staticmethod
+    def get_detection_in_region(detections, detection_region):
+
+        # initialize a instance of Detection class with empty values
+        detections_in_specified_region = sv.Detections(xyxy=np.empty((0, 4)), mask=None,
+                                                       confidence=np.empty((0,)),
+                                                       class_id=np.empty((0,)),
+                                                       tracker_id=None)
+        # create temporary lists to store the values of xyxy, class_id and confidence of the objects in given region
+        tmp_xyxy = []
+        tmp_class_id = []
+        tmp_confidence = []
+        for detection in detections:
+            # add to detection_results only if the object is in the specified region
+            # if detection[0][0] > self.detection_region[0] and detection[0][1] > self.detection_region[1] and detection[0][2] < self.detection_region[2] and detection[0][3] < self.detection_region[3]:
+            if VideoDetection.intersects(detection[0], detection_region):
+                tmp_xyxy.append(detection[0])
+                tmp_class_id.append(detection[3])
+                tmp_confidence.append(detection[2])
+
+        detections_in_specified_region.xyxy = np.array(tmp_xyxy)
+        detections_in_specified_region.class_id = np.array(tmp_class_id)
+        detections_in_specified_region.confidence = np.array(tmp_confidence)
+
+        return detections_in_specified_region
+
     # return the last captured frame (an image array vector)
     def get_last_frame(self):
         return self.last_frame
@@ -249,18 +256,24 @@ class VideoDetection:
     def get_source_params(self):
         return self.camera_fps, self.frame_width, self.frame_height, self.useStream
 
-    def intersects(self, xyxy, xyxy_bounds):
+    @staticmethod
+    def intersects(xyxy, xyxy_bounds):
         return not (xyxy[2] < xyxy_bounds[0] or xyxy[0] > xyxy_bounds[2] or xyxy[3] < xyxy_bounds[
             1] or xyxy[1] > xyxy_bounds[3])
 
     @staticmethod
-    def is_inside(self, xy, xyxy):
+    def is_inside(xy, xyxy):
         p_x, p_y = xy
         min_x, min_y, max_x, max_y = xyxy
         return min_x < p_x < max_x and min_y < p_y < max_y
 
+    # return the last detection results in the format of [[bounding_boxes, mask, confidence, class_id, tracker_id], ...]
     def get_last_detection(self):
         return self.last_detection
+
+    # return the class labels of the model, [name1, name2, ...]
+    def get_class_labels(self):
+        return self.class_labels
 
     def __exit__(self, exception_type, exception_value, traceback):
 
