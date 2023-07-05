@@ -1,7 +1,9 @@
 from queue import Queue
 from enum import Enum
+import threading
 
 import modules.utilities.time as time_utility
+from config import DIRECTIONS_OPTION, ORS_OPTION
 from modules.dataformat.data_types import DataTypes
 from services.running_service.running_current_data import CurrentData
 from . import running_data_handler as running_data_handler
@@ -15,13 +17,20 @@ class RunningTrainingMode(Enum):
 class SpeedTrainingStats:
     distance_interval = 0.4  # km
     time_info_active = 5  # secs
+    update_interval = 1  # secs
     training_speed_tolerance = 0.5  # min/km
+    direction_distance_tolerance = 20  # m
     correct_speed = False
 
 
 total_sec = 0
 request_queue = Queue()
-is_processing_running_request = False
+is_processing_running = False
+is_processing_direction = False
+has_running = False
+has_direction = False
+latest_start_time = 0.0
+destination_radius = 5  # meters
 
 
 def is_item_in_queue(queue, item):
@@ -30,7 +39,7 @@ def is_item_in_queue(queue, item):
 
 
 def get_exercise_data(real_wearos):
-    global total_sec
+    global total_sec, has_running, has_direction
     total_sec = (time_utility.get_current_millis() - CurrentData.start_time) / 1000
     total_min = (total_sec / 60)
 
@@ -57,12 +66,16 @@ def get_exercise_data(real_wearos):
     elif socket_data_type == DataTypes.REQUEST_RUNNING_DATA:
         # check is_processing_running_request just in case the next request is sent before the previous request is
         # processed finished
-        if is_processing_running_request or not is_item_in_queue(request_queue, DataTypes.REQUEST_RUNNING_DATA):
+        if is_processing_running or not is_item_in_queue(request_queue, DataTypes.REQUEST_RUNNING_DATA):
+            print('received running request')
             request_queue.put(DataTypes.REQUEST_RUNNING_DATA)
+            has_running = True
 
     elif socket_data_type == DataTypes.REQUEST_DIRECTION_DATA:
-        if not is_item_in_queue(request_queue, DataTypes.REQUEST_DIRECTION_DATA):
+        if is_processing_direction or not is_item_in_queue(request_queue, DataTypes.REQUEST_DIRECTION_DATA):
+            print('received direction request')
             request_queue.put(DataTypes.REQUEST_DIRECTION_DATA)
+            has_direction = True
 
     elif socket_data_type == DataTypes.REQUEST_SUMMARY_DATA:
         image = running_data_handler.get_static_maps_image()
@@ -83,9 +96,9 @@ def get_exercise_data(real_wearos):
         print(f'Unsupported data type: {socket_data_type}')
 
 
-def get_training_update(training_mode, start_end_coords, training_speed=None):
+def get_training_update(training_mode, start_end_coords, training_speed=None, real_wearos=False):
     if training_mode == RunningTrainingMode.SpeedTraining:
-        speed_training_update(start_end_coords, training_speed)
+        speed_training_update(start_end_coords, training_speed, real_wearos)
     elif training_mode == RunningTrainingMode.DistanceTraining:
         distance_training_update(start_end_coords)
     else:
@@ -93,42 +106,141 @@ def get_training_update(training_mode, start_end_coords, training_speed=None):
 
 
 # assume training route is given as a list of coordinates
-def speed_training_update(start_end_coords, training_speed):
-    # FIXME: Implement this
-    # decide the route
-    # show all running info intermittently (say evey 400m for 5 seconds - customizable parameters)
-    # show the running speed intermittently when it's higher/lower than the target speed (+ error) - const, may be give visual instructions also
-    global is_processing_running_request
+def speed_training_update(start_end_coords, training_speed, real_wearos):
+    # FIXME: Implement this decide the route show all running info intermittently (say evey 400m for 5 seconds -
+    #  customizable parameters) show the running speed intermittently when it's higher/lower than the target speed (+
+    #  error) - const, may be give visual instructions also
+    global is_processing_running, is_processing_direction, has_running, has_direction
+
+    src_lat = start_end_coords[0][0]
+    src_lng = start_end_coords[0][1]
+    dest_lat = start_end_coords[1][0]
+    dest_lng = start_end_coords[1][1]
 
     while not request_queue.empty():
-        if DataTypes.REQUEST_RUNNING_DATA in request_queue.queue:
-            is_processing_running_request = True
-            loop_speed_training(start_end_coords, training_speed)
+        if has_running or has_direction in request_queue.queue:
+            # print(str(list(request_queue.queue)))
+            loop_speed_training(src_lat, src_lng, dest_lat, dest_lng, training_speed, real_wearos)
             with request_queue.mutex:
-                # print(str(list(request_queue.queue)))
-                request_queue.queue.remove(DataTypes.REQUEST_RUNNING_DATA)
-                is_processing_running_request = False
+                if has_running:
+                    request_queue.queue.remove(DataTypes.REQUEST_RUNNING_DATA)
+                    is_processing_running = False
+                    has_running = DataTypes.REQUEST_RUNNING_DATA in request_queue.queue
+                if has_direction:
+                    request_queue.queue.remove(DataTypes.REQUEST_DIRECTION_DATA)
+                    is_processing_direction = False
+                    has_direction = DataTypes.REQUEST_DIRECTION_DATA in request_queue.queue
 
-def loop_speed_training(start_end_coords, training_speed):
-    global total_sec
+
+def loop_speed_training(src_lat, src_lng, dest_lat, dest_lng, training_speed, real_wearos):
+    global total_sec, is_processing_running, is_processing_direction, has_running, has_direction
 
     # check curr distance with prev distance > 400m every 5 seconds
-    if (CurrentData.curr_distance - CurrentData.prev_distance) > SpeedTrainingStats.distance_interval:
-        CurrentData.prev_distance = CurrentData.curr_distance
-        for _ in range(SpeedTrainingStats.time_info_active):
-            check_correct_speed(training_speed)
-            running_data_handler.send_running_data(CurrentData.curr_distance, CurrentData.curr_heart_rate,
-                                                   CurrentData.avg_speed, total_sec, True)
-            time_utility.sleep_seconds(1) # update every second within 5 seconds
+    dist_check = (CurrentData.curr_distance - CurrentData.prev_distance) > SpeedTrainingStats.distance_interval
+    if has_running:
+        is_processing_running = True
+        if dist_check:
+            CurrentData.prev_distance = CurrentData.curr_distance
+
+    for _ in range(SpeedTrainingStats.time_info_active):
+        threads = []
+
+        if has_running:
+            running_thread = threading.Thread(target=process_running_request, args=(training_speed, dist_check))
+            threads.append(running_thread)
+            running_thread.start()
+
+        if has_direction:
+            direction_thread = threading.Thread(target=process_direction_request,
+                                                args=(src_lat, src_lng, dest_lat, dest_lng, real_wearos))
+            threads.append(direction_thread)
+            direction_thread.start()
+
+        for thread in threads:
+            thread.join()
+
+        time_utility.sleep_seconds(SpeedTrainingStats.update_interval)
+
+
+def process_running_request(training_speed, dist_check):
+    print('Processing running data...')
+    check_correct_speed(training_speed)
+    if dist_check:
+        running_data_handler.send_running_data(CurrentData.curr_distance, CurrentData.curr_heart_rate,
+                                               CurrentData.avg_speed, total_sec, True)
     else:
-        for _ in range(SpeedTrainingStats.time_info_active):
-            check_correct_speed(training_speed)
-            if SpeedTrainingStats.correct_speed:
-                running_data_handler.send_running_data()
-                # TODO: maybe add an instruction to say user is on track?
-            else:
-                running_data_handler.send_running_data(speed=CurrentData.avg_speed)
-            time_utility.sleep_seconds(1)
+        if SpeedTrainingStats.correct_speed:
+            # TODO: maybe add an instruction to say user is on track?
+            running_data_handler.send_running_data()
+        else:
+            running_data_handler.send_running_data(speed=CurrentData.avg_speed)
+
+
+def process_direction_request(src_lat, src_lng, dest_lat, dest_lng, real_wearos):
+    print('Processing direction data...')
+    global latest_start_time, destination_radius
+    if real_wearos:
+        if CurrentData.curr_lat == 0.0 and CurrentData.curr_lng == 0.0:
+            CurrentData.curr_lat = src_lat
+            CurrentData.curr_lng = src_lng
+
+        result = running_data_handler.get_directions_real(CurrentData.start_time, CurrentData.curr_lat,
+                                                          CurrentData.curr_lng, dest_lat,
+                                                          dest_lng, CurrentData.bearing,
+                                                          DIRECTIONS_OPTION, ORS_OPTION)
+    else:
+        result = running_data_handler.get_directions_mock(total_sec)
+
+    # result can't be None, it just returns empty DirectionData if no data
+    # so no need to check if result is None
+    dest_dist_str = result.dest_dist_str
+    dest_dist = result.dest_dist
+    dest_duration_str = result.dest_duration_str
+    dest_duration = result.dest_duration
+    curr_dist_str = result.curr_dist_str
+    curr_dist = result.curr_dist
+    curr_duration_str = result.curr_duration_str
+    curr_duration = result.curr_duration
+    curr_instr = result.curr_instr
+    curr_direction = result.curr_direction
+    num_steps = result.num_steps
+
+    # Check if CurrentData is a new exercise/route (use start time to differentiate)
+    if latest_start_time != CurrentData.start_time:
+        latest_start_time = CurrentData.start_time
+        # set total steps count to new route steps count
+        # print("total_steps: " + num_steps)
+        CurrentData.total_steps = int(num_steps)
+
+    # if the user walks the wrong way, the total steps will be less than the current steps
+    # so we need to update the total steps to the current steps
+    if CurrentData.curr_steps > CurrentData.total_steps:
+        CurrentData.total_steps = int(num_steps)
+
+    CurrentData.curr_steps = int(num_steps)
+    # we set a 5 meters radius from destination for the user to be considered to have reached destination
+    if CurrentData.curr_steps == 1 and CurrentData.curr_distance <= destination_radius:
+        running_data_handler.send_direction_data(curr_instr="Destination Reached!")
+
+    # check for first and last, always show direction data
+    elif CurrentData.curr_steps == 1 or CurrentData.curr_steps == CurrentData.total_steps:
+        # print("curr_steps: " + str(CurrentData.curr_steps) + ", total_steps: " + str(CurrentData.total_steps))
+        running_data_handler.send_direction_data(dest_dist_str, dest_duration_str, curr_dist_str, curr_duration_str,
+                                                 curr_instr, curr_direction)
+
+    # check for direction, don't show if straight
+    elif curr_direction != "straight":
+        # print("curr_direction: " + curr_direction)
+        # check for distance, only show if close by like x meters for example
+        if curr_dist <= SpeedTrainingStats.direction_distance_tolerance:
+            # print("curr_dist: " + curr_dist_str)
+            running_data_handler.send_direction_data(dest_dist_str, dest_duration_str, curr_dist_str, curr_duration_str,
+                                                     curr_instr, curr_direction)
+        else:
+            # hide direction data
+            running_data_handler.send_direction_data()
+    else:
+        running_data_handler.send_direction_data()
 
 
 def check_correct_speed(training_speed):
@@ -143,6 +255,7 @@ def check_correct_speed(training_speed):
         else:
             instruction = "Slow down!"
         running_data_handler.send_running_alert(speed="true", instruction=instruction)
+
 
 def distance_training_update(start_end_coords):
     # FIXME: Implement this

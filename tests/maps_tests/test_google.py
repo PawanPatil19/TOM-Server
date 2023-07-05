@@ -45,7 +45,7 @@ directions_sample_response_google = DirectionData(start_time=0, update_time=1687
                                                   curr_dist=192, curr_dist_str='0.2 km', curr_duration=128,
                                                   curr_duration_str='2 mins',
                                                   curr_instr='Head south on Business Link toward Heng Mui Keng Terrace',
-                                                  curr_direction=165, next_direction=64,
+                                                  curr_direction="165", num_steps="5",
                                                   error_message='')
 
 
@@ -70,7 +70,7 @@ async def test_directions_google_success():
     assert response.curr_duration_str == directions_sample_response_google.curr_duration_str
     assert response.curr_instr == directions_sample_response_google.curr_instr
     assert response.curr_direction == directions_sample_response_google.curr_direction
-    assert response.next_direction == directions_sample_response_google.next_direction
+    assert response.num_steps == directions_sample_response_google.num_steps
     assert response.error_message == directions_sample_response_google.error_message
 
 

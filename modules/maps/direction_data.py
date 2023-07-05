@@ -26,7 +26,7 @@ class DirectionData:
     # Text instruction of which road to take, for example.
     curr_instr: str = ""
     # angle to turn to next step.
-    curr_direction: int = ""
-    # angle from next step to the step after that.
-    next_direction: int = ""
+    curr_direction: str = ""
+    # number of steps to reach destination.
+    num_steps: str = "0"
     error_message: str = ""

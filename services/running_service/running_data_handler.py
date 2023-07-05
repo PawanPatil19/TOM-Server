@@ -3,6 +3,8 @@ import logging
 import random
 
 from google.protobuf.message import DecodeError
+
+from modules.maps.direction_data import DirectionData
 from modules.maps.maps_util import calculate_distance
 
 import modules.utilities.time as time_utility
@@ -79,6 +81,7 @@ def decode_request_data(request_type, data):
             'Received data is not a valid request_data protobuf message')
         return None, None
 
+
 ##############################################################################################################
 ############################################## Saving data ###################################################
 ##############################################################################################################
@@ -99,6 +102,7 @@ def save_mock_coords(start_lat, start_lng, dest_lat, dest_lng):
 
 
 def save_real_running_data(decoded_data):
+    CurrentData.start_time = decoded_data.start_time
     CurrentData.avg_speed = -1.0
     if decoded_data.speed_avg > 0:
         CurrentData.avg_speed = 1000 / (60 * decoded_data.speed_avg)  # min/km
@@ -116,7 +120,7 @@ def save_real_running_data(decoded_data):
 def save_real_coords():
     # set a min distance between prev coordinate and current coordinate, in meters
     # this is to prevent adding points that are too close to each other
-    threshold_distance = 30 
+    threshold_distance = 30
     if len(CurrentData.coords) > 0:
         prev_lat, prev_lng = CurrentData.coords[-1]
 
@@ -125,6 +129,7 @@ def save_real_coords():
             CurrentData.coords.append((CurrentData.curr_lat, CurrentData.curr_lng))
     else:
         CurrentData.coords.append((CurrentData.curr_lat, CurrentData.curr_lng))
+
 
 ##############################################################################################################
 ############################################## Sending data ##################################################
@@ -151,7 +156,7 @@ def send_running_data(distance=None, heart_rate=None, speed=None, duration=None,
 
     if include_time is True:
         running_data_proto.time = time_utility.get_date_string("%I:%M %p")
-    
+
     running_data_bytes = wrap_message_with_metadata(running_data_proto, DataTypes.RUNNING_DATA)
     send_socket_server(running_data_bytes)
 
@@ -164,39 +169,47 @@ def send_running_unit(distance='', heart_rate='', speed='', duration='', time=''
         duration=duration,
         time=time,
     )
-    running_unit_bytes = wrap_message_with_metadata(
-        running_unit_data_proto, DataTypes.RUNNING_UNIT)
+    running_unit_bytes = wrap_message_with_metadata(running_unit_data_proto, DataTypes.RUNNING_UNIT)
     send_socket_server(running_unit_bytes)
-    
+
+
 def send_running_alert(speed=None, distance=None, instruction=None):
     running_alert_data_proto = running_data_pb2.RunningData(
         speed=speed,
         distance=distance,
         instruction=instruction,
     )
-    running_alert_bytes = wrap_message_with_metadata(
-        running_alert_data_proto, DataTypes.RUNNING_ALERT)
+    running_alert_bytes = wrap_message_with_metadata(running_alert_data_proto, DataTypes.RUNNING_ALERT)
     send_socket_server(running_alert_bytes)
 
 
-def send_direction_data(start_time, curr_lat, curr_lng, dest_lat, dest_lng, bearing):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    result = loop.run_until_complete(get_directions_real(
-        start_time, curr_lat, curr_lng, dest_lat, dest_lng, bearing, DIRECTIONS_OPTION, ORS_OPTION))
-    loop.close()
+# change this args
+def send_direction_data(dest_dist_str=None, dest_duration_str=None, curr_dist_str=None, curr_duration_str=None,
+                        curr_instr=None, curr_direction=None, num_steps=None):
 
-    direction_data_proto = direction_data_pb2.DirectionData(
-        dest_dist=result.dest_dist_str,
-        dest_duration=result.dest_duration_str,
-        curr_dist=result.curr_dist_str,
-        curr_duration=result.curr_duration_str,
-        curr_instr=result.curr_instr,
-        curr_direction=str(result.curr_direction),
-        next_direction=str(result.next_direction),
-    )
-    direction_data_bytes = wrap_message_with_metadata(
-        direction_data_proto, DataTypes.DIRECTION_DATA)
+    direction_data_proto = direction_data_pb2.DirectionData()
+    if dest_dist_str is not None:
+        direction_data_proto.dest_dist = dest_dist_str
+
+    if dest_duration_str is not None:
+        direction_data_proto.dest_duration = dest_duration_str
+
+    if curr_dist_str is not None:
+        direction_data_proto.curr_dist = curr_dist_str
+
+    if curr_duration_str is not None:
+        direction_data_proto.curr_duration = curr_duration_str
+
+    if curr_instr is not None:
+        direction_data_proto.curr_instr = curr_instr
+
+    if curr_direction is not None:
+        direction_data_proto.curr_direction = curr_direction
+
+    if num_steps is not None:
+        direction_data_proto.num_steps = num_steps
+
+    direction_data_bytes = wrap_message_with_metadata(direction_data_proto, DataTypes.DIRECTION_DATA)
     send_socket_server(direction_data_bytes)
 
 
@@ -208,8 +221,7 @@ def send_summary_data(exercise_type, start_place, start_time_string, distance, s
         duration=time_utility.get_hh_mm_ss_format(int(duration)),
         image=image
     )
-    summary_data_bytes = wrap_message_with_metadata(
-        summary_data_proto, DataTypes.SUMMARY_DATA)
+    summary_data_bytes = wrap_message_with_metadata(summary_data_proto, DataTypes.SUMMARY_DATA)
     send_socket_server(summary_data_bytes)
 
 
@@ -237,8 +249,7 @@ def send_type_position_mapping():
         summary_speed_position=RunningDataDisplayPosition.Center.value,
         summary_duration_position=RunningDataDisplayPosition.Right.value,
     )
-    type_mapping_bytes = wrap_message_with_metadata(
-        type_position_mapping_data, DataTypes.TYPE_POSITION_MAPPING_DATA)
+    type_mapping_bytes = wrap_message_with_metadata(type_position_mapping_data, DataTypes.TYPE_POSITION_MAPPING_DATA)
     send_socket_server(type_mapping_bytes)
 
 
@@ -264,8 +275,14 @@ def wrap_message_with_metadata(data, data_type):
     return socket_data.SerializeToString()
 
 
-async def get_directions_real(start_time, curr_lat, curr_lng, dest_lat, dest_lng, bearing, option, ors_option=0):
-    return await get_walking_directions(start_time, curr_lat, curr_lng, dest_lat, dest_lng, bearing, option, ors_option)
+def get_directions_real(start_time, curr_lat, curr_lng, dest_lat, dest_lng, bearing, option, ors_option=0):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    result = loop.run_until_complete(get_walking_directions(
+        start_time, curr_lat, curr_lng, dest_lat, dest_lng, bearing, option, ors_option))
+    loop.close()
+    return result
+
 
 last_update_time = 0
 next_reset_time = 0
@@ -275,28 +292,67 @@ reset_direction = False
 def get_directions_mock(total_sec):
     global last_update_time, next_reset_time, reset_direction
 
-    directions = ''
+    # directions = ''
+    direction_data = DirectionData()
+    dest_dist = 800
+    dest_dist_str = f'{dest_dist} m'
+    dest_duration = 100
+    dest_duration_str = f'{dest_duration} s'
+    curr_dist = 80
+    curr_dist_str = f'{curr_dist} m'
+    curr_duration = 10
+    curr_duration_str = f'{curr_duration} s'
+    curr_instr = 'Head north'
+    num_steps = "4"
+
+    directions_list = [
+        "straight",
+        "turn_slight_right",
+        "turn_right",
+        "turn_sharp_right",
+        "u_turn",
+        "turn_sharp_left",
+        "turn_left",
+        "turn_slight_left"
+    ]
 
     if total_sec > last_update_time + 25:
-        rand_dir = random.randint(1, 3)
-        if rand_dir == 1:
-            directions = 'ANGLE|270,INSTRUCT|Turn Left,'
-        elif rand_dir == 2:
-            directions = 'ANGLE|0,INSTRUCT|Go Straight,'
-        elif rand_dir == 3:
-            directions = 'ANGLE|90,INSTRUCT|Turn Right,'
-        else:
-            directions = ''
+        # rand_dir = random.randint(1, 3)
+        # if rand_dir == 1:
+        #     directions = 'ANGLE|270,INSTRUCT|Turn Left,'
+        # elif rand_dir == 2:
+        #     directions = 'ANGLE|0,INSTRUCT|Go Straight,'
+        # elif rand_dir == 3:
+        #     directions = 'ANGLE|90,INSTRUCT|Turn Right,'
+        # else:
+        #     directions = ''
+        random_direction = random.choice(directions_list)
 
         last_update_time = total_sec
         reset_direction = False
         next_reset_time = last_update_time + 3
+        direction_data = DirectionData(
+            time_utility.get_current_millis(),
+            time_utility.get_current_millis(),
+            dest_dist,
+            dest_dist_str,
+            dest_duration,
+            dest_duration_str,
+            curr_dist,
+            curr_dist_str,
+            curr_duration,
+            curr_duration_str,
+            curr_instr,
+            random_direction,
+            num_steps
+        )
 
     if total_sec > next_reset_time and not reset_direction:
-        directions = 'ANGLE|-1,INSTRUCT|,'
+        # directions = 'ANGLE|-1,INSTRUCT|,'
+        direction_data = DirectionData()
         reset_direction = True
 
-    return directions
+    return direction_data
 
 
 def get_static_maps_image():

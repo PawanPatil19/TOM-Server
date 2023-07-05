@@ -10,20 +10,23 @@ from services.running_service.running_data_handler import save_mock_coords
 from services.running_service.running_service import get_exercise_data, get_training_update, RunningTrainingMode
 
 flag_is_running = False
-start_lat = 51.5310555
-start_lng = -0.1272269
-dest_lat = 51.5305625
-dest_lng = -0.1238843
+# start is set to Kings cross station pancras in London, approximately where the start of the simulated route on
+# wearOS would be.
+start_lat = 51.5301891
+start_lng = -0.1235101
+# destination is set to be Angel station London for now, since the simulated route on wearOS would pass by it.
+dest_lat = 51.5317887
+dest_lng = -0.1064218
 
 
-def start_running_service():
+def start_running_service(real_wearos):
     global flag_is_running, start_lat, start_lng, dest_lat, dest_lng
     training_mode = RunningTrainingMode.SpeedTraining
     start_end_coords = [(start_lat, start_lng), (dest_lat, dest_lng)]
     target_speed = 8  # min/km
 
     while flag_is_running:
-        get_training_update(training_mode, start_end_coords, target_speed)
+        get_training_update(training_mode, start_end_coords, target_speed, real_wearos)
 
 
 def start_wearos(real_wearos):
@@ -44,8 +47,8 @@ def start_wearos_threaded(wearos_real):
     server_thread.start()
 
 
-def start_running_service_threaded():
-    server_thread = threading.Thread(target=start_running_service, daemon=True)
+def start_running_service_threaded(wearos_real):
+    server_thread = threading.Thread(target=start_running_service, args=(wearos_real,), daemon=True)
     server_thread.start()
 
 
@@ -119,7 +122,7 @@ def run(wearos_real=False, hololens_real=False):
 
     start_wearos_threaded(wearos_real)
 
-    start_running_service_threaded()
+    start_running_service_threaded(wearos_real)
 
     start_yolo(hololens_portal.API_STREAM_VIDEO if hololens_real else 0)
 

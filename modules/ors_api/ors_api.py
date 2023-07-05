@@ -60,14 +60,9 @@ async def find_directions_ors(start_time, src_lat, src_lng, dest_lat, dest_lng, 
     curr_bearing_before = bearing
     curr_bearing_after = curr_maneuver["bearing_after"]
     curr_direction = maps_util.calculate_turn_angle(curr_bearing_before, curr_bearing_after)
-
-    next_direction = None
-    if len(steps) > 1:
-        next_step = steps[1]
-        next_maneuver = next_step["maneuver"]
-        next_bearing_before = next_maneuver["bearing_before"]
-        next_bearing_after = next_maneuver["bearing_after"]
-        next_direction = maps_util.calculate_turn_angle(next_bearing_before, next_bearing_after)
+    # last step is just 0m to indicate destination reached, so we use the second last step instead
+    num_steps = len(steps) - 1 if len(steps) > 1 else 1
+    
     return DirectionData(
         start_time=start_time,
         update_time=int(time.time() * 1000),
@@ -80,6 +75,6 @@ async def find_directions_ors(start_time, src_lat, src_lng, dest_lat, dest_lng, 
         curr_duration=math.ceil(curr_duration),
         curr_duration_str=f"{math.ceil(curr_duration / 60)} min",
         curr_instr=curr_instr,
-        curr_direction=curr_direction,
-        next_direction=next_direction
+        curr_direction=str(curr_direction),
+        num_steps=str(num_steps)
     )

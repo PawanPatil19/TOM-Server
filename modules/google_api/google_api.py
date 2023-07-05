@@ -83,19 +83,9 @@ async def find_directions_google(start_time, src_lat, src_lng, dest_lat, dest_ln
     curr_bearing_after = calculate_bearing_after(
         src_lat, src_lng, curr_step_end_lat, curr_step_end_lng)
     curr_direction = calculate_turn_angle(bearing, curr_bearing_after)
+    
+    num_steps = len(leg['steps'])
 
-    next_direction = None
-    if len(leg['steps']) > 1:
-        next_step_start_location = leg['steps'][1]['start_location']
-        next_step_end_location = leg['steps'][1]['end_location']
-        next_step_start_lat = next_step_start_location['lat']
-        next_step_start_lng = next_step_start_location['lng']
-        next_step_end_lat = next_step_end_location['lat']
-        next_step_end_lng = next_step_end_location['lng']
-        next_bearing_after = calculate_bearing_after(
-            next_step_start_lat, next_step_start_lng, next_step_end_lat, next_step_end_lng)
-        next_direction = calculate_turn_angle(
-            curr_bearing_after, next_bearing_after)
 
     return DirectionData(
         start_time=start_time,
@@ -109,10 +99,9 @@ async def find_directions_google(start_time, src_lat, src_lng, dest_lat, dest_ln
         curr_duration=curr_duration,
         curr_duration_str=curr_duration_str,
         # regex to remove html tags, from https://stackoverflow.com/a/12982689/18753727
-        curr_instr=re.sub(re.compile(
-            '<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});'), '', curr_instr),
-        curr_direction=curr_direction,
-        next_direction=next_direction
+        curr_instr=re.sub(re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});'), '', curr_instr),
+        curr_direction=str(curr_direction),
+        num_steps=str(num_steps)
     )
 
 

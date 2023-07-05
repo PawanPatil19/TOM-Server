@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14\x64irection_data.proto\"\xb5\x01\n\rDirectionData\x12\x13\n\tdest_dist\x18\x01 \x01(\t:\x00\x12\x17\n\rdest_duration\x18\x02 \x01(\t:\x00\x12\x13\n\tcurr_dist\x18\x03 \x01(\t:\x00\x12\x17\n\rcurr_duration\x18\x04 \x01(\t:\x00\x12\x14\n\ncurr_instr\x18\x05 \x01(\t:\x00\x12\x18\n\x0e\x63urr_direction\x18\x06 \x01(\t:\x00\x12\x18\n\x0enext_direction\x18\x07 \x01(\t:\x00')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14\x64irection_data.proto\"\xb0\x01\n\rDirectionData\x12\x13\n\tdest_dist\x18\x01 \x01(\t:\x00\x12\x17\n\rdest_duration\x18\x02 \x01(\t:\x00\x12\x13\n\tcurr_dist\x18\x03 \x01(\t:\x00\x12\x17\n\rcurr_duration\x18\x04 \x01(\t:\x00\x12\x14\n\ncurr_instr\x18\x05 \x01(\t:\x00\x12\x18\n\x0e\x63urr_direction\x18\x06 \x01(\t:\x00\x12\x13\n\tnum_steps\x18\x07 \x01(\t:\x00')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -22,5 +22,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   _globals['_DIRECTIONDATA']._serialized_start=25
-  _globals['_DIRECTIONDATA']._serialized_end=206
+  _globals['_DIRECTIONDATA']._serialized_end=201
 # @@protoc_insertion_point(module_scope)

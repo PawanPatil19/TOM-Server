@@ -7,7 +7,7 @@ directions_sample_response_ors = DirectionData(start_time=0, update_time=1687246
                                                dest_dist_str='2458 m', dest_duration=1770, dest_duration_str='30 min',
                                                curr_dist=21, curr_dist_str='21 m', curr_duration=15,
                                                curr_duration_str='1 min', curr_instr='Head south on 5, 5',
-                                               curr_direction=136, next_direction=90,
+                                               curr_direction="136", num_steps="46",
                                                error_message='')
 
 
@@ -21,7 +21,7 @@ async def test_directions_ors_api_success():
     assert abs(response.curr_duration - directions_sample_response_ors.curr_duration) <= 5
     assert response.curr_instr == directions_sample_response_ors.curr_instr
     assert response.curr_direction == directions_sample_response_ors.curr_direction
-    assert response.next_direction == directions_sample_response_ors.next_direction
+    assert response.num_steps == directions_sample_response_ors.num_steps
     assert response.error_message == directions_sample_response_ors.error_message
 
 
@@ -37,5 +37,5 @@ async def test_directions_ors_localhost_success():
     assert abs(response.curr_duration - directions_sample_response_ors.curr_duration) <= 5
     assert response.curr_instr == directions_sample_response_ors.curr_instr
     assert response.curr_direction == directions_sample_response_ors.curr_direction
-    assert response.next_direction == directions_sample_response_ors.next_direction
+    assert response.num_steps == directions_sample_response_ors.num_steps
     assert response.error_message == directions_sample_response_ors.error_message
