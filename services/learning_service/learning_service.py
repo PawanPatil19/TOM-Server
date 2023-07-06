@@ -5,6 +5,7 @@ import statistics
 import modules.utilities.time as time_utility
 from modules.dataformat.data_types import DataTypes
 from . import learning_data_handler as learning_data_handler
+from . import learning_display as learning_display
 
 from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
 from modules.langchain_llm.LangChainTextGenerator import LangChainTextGenerator as TextGenerator
@@ -114,7 +115,8 @@ def _send_learning_data(object_of_interest):
     _leaning_data_has_sent = True
 
     learning_content = get_learning_data(object_of_interest)
-    learning_data_handler.send_learning_data(object_of_interest, learning_content)
+    formatted_content = learning_display.get_formatted_learning_details(learning_content)
+    learning_data_handler.send_learning_data(object_of_interest, formatted_content)
 
 
 def _clear_learning_data():
