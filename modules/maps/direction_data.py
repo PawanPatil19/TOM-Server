@@ -26,7 +26,15 @@ class DirectionData:
     # Text instruction of which road to take, for example.
     curr_instr: str = ""
     # angle to turn to next step.
-    curr_direction: int = ""
-    # angle from next step to the step after that.
-    next_direction: int = ""
+    curr_direction: str = ""
+    # number of steps to reach destination.
+    num_steps: str = "0"
+    # distance to next waypoint from current location. Stored in meters.
+    waypoint_dist: int = 0
+    # same as above but in string format
+    waypoint_dist_str: str = ""
+    # Refers to the total estimated time to reach the next waypoint set by the user. Stored in seconds.
+    waypoint_duration: int = 0
+    # same as above but in string format.
+    waypoint_duration_str: str = ""
     error_message: str = ""

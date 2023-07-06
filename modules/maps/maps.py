@@ -9,17 +9,15 @@ from modules.google_api import google_api
 from googlemaps.exceptions import ApiError
 
 
-async def get_walking_directions(start_time, src_lat, src_lng, dest_lat, dest_lng, bearing, option, ors_option=0):
+async def get_walking_directions(start_time, coordinates, bearing, option, ors_option=0):
     direction_data = DirectionData()
     try:
         if option == 0:
             # Use OpenRouteService API
-            direction_data = await ors_api.find_directions_ors(start_time, src_lat, src_lng, dest_lat, dest_lng,
-                                                               bearing, ors_option)
+            direction_data = await ors_api.find_directions_ors(start_time, coordinates, bearing, ors_option)
         elif option == 1:
             # Use Google Maps Directions API
-            direction_data = await google_api.find_directions_google(start_time, src_lat, src_lng, dest_lat, dest_lng,
-                                                                     bearing)
+            direction_data = await google_api.find_directions_google(start_time, coordinates, bearing)
     except Exception as e:
         error_message = str(e)
         if isinstance(e, ApiError):

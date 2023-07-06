@@ -5,5 +5,6 @@ message RunningData {
   optional string heart_rate = 2 [default = ""];
   optional string speed = 3 [default = ""];
   optional string duration = 4 [default = ""];
-  optional string time = 5 [default = ""];  
+  optional string time = 5 [default = ""];
+  optional string instruction = 6 [default = ""];
 }

@@ -7,5 +7,5 @@ message DirectionData {
   optional string curr_duration = 4 [default = ""];
   optional string curr_instr = 5 [default = ""];
   optional string curr_direction = 6 [default = ""];
-  optional string next_direction = 7 [default = ""];
+  optional string num_steps = 7 [default = ""];
 }

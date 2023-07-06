@@ -1,4 +1,5 @@
 import json
+import math
 import re
 import time
 from io import BytesIO
@@ -56,46 +57,44 @@ async def find_locations_google(search_text, location=None):
     return location_data_list
 
 
-async def find_directions_google(start_time, src_lat, src_lng, dest_lat, dest_lng, bearing):
-    src = f"{src_lat}, {src_lng}"
-    dest = f"{dest_lat}, {dest_lng}"
+async def find_directions_google(start_time, coordinates, bearing):
+    src = coordinates[0]
+    dest = coordinates[-1]
+    waypoints = coordinates[1:-1]
+
     client = get_google_client()
     directions_result = client.directions(
         origin=src,
         destination=dest,
+        waypoints=waypoints,
         mode="walking"
     )
 
     route = directions_result[0]
-    leg = route['legs'][0]
-    dest_dist = leg['distance']['value']
-    dest_dist_str = leg['distance']['text']
-    dest_duration = leg['duration']['value']
-    dest_duration_str = leg['duration']['text']
+    num_steps = 0
+    dest_dist = 0
+    dest_duration = 0
+    for leg in route['legs']:
+        num_steps += len(leg['steps'])
+        dest_dist += leg['distance']['value']
+        dest_duration += leg['duration']['value']
+    dest_dist_str = f"{dest_dist} m"
+    dest_duration_str = f"{math.ceil(dest_duration / 60)} min"
 
-    curr_dist = leg['steps'][0]['distance']['value']
-    curr_dist_str = leg['steps'][0]['distance']['text']
-    curr_duration = leg['steps'][0]['duration']['value']
-    curr_duration_str = leg['steps'][0]['duration']['text']
-    curr_instr = leg['steps'][0]['html_instructions']
-    curr_step_end_lat = leg['steps'][0]['end_location']['lat']
-    curr_step_end_lng = leg['steps'][0]['end_location']['lng']
-    curr_bearing_after = calculate_bearing_after(
-        src_lat, src_lng, curr_step_end_lat, curr_step_end_lng)
+    curr_leg = route['legs'][0]
+    curr_dist = curr_leg['steps'][0]['distance']['value']
+    curr_dist_str = curr_leg['steps'][0]['distance']['text']
+    curr_duration = curr_leg['steps'][0]['duration']['value']
+    curr_duration_str = curr_leg['steps'][0]['duration']['text']
+    curr_instr = curr_leg['steps'][0]['html_instructions']
+    curr_step_end_lat = curr_leg['steps'][0]['end_location']['lat']
+    curr_step_end_lng = curr_leg['steps'][0]['end_location']['lng']
+    curr_bearing_after = calculate_bearing_after(src[0], src[1], curr_step_end_lat, curr_step_end_lng)
     curr_direction = calculate_turn_angle(bearing, curr_bearing_after)
-
-    next_direction = None
-    if len(leg['steps']) > 1:
-        next_step_start_location = leg['steps'][1]['start_location']
-        next_step_end_location = leg['steps'][1]['end_location']
-        next_step_start_lat = next_step_start_location['lat']
-        next_step_start_lng = next_step_start_location['lng']
-        next_step_end_lat = next_step_end_location['lat']
-        next_step_end_lng = next_step_end_location['lng']
-        next_bearing_after = calculate_bearing_after(
-            next_step_start_lat, next_step_start_lng, next_step_end_lat, next_step_end_lng)
-        next_direction = calculate_turn_angle(
-            curr_bearing_after, next_bearing_after)
+    waypoint_dist = curr_leg['distance']['value']
+    waypoint_dist_str = curr_leg['distance']['text']
+    waypoint_duration = curr_leg['duration']['value']
+    waypoint_duration_str = curr_leg['duration']['text']
 
     return DirectionData(
         start_time=start_time,
@@ -109,10 +108,13 @@ async def find_directions_google(start_time, src_lat, src_lng, dest_lat, dest_ln
         curr_duration=curr_duration,
         curr_duration_str=curr_duration_str,
         # regex to remove html tags, from https://stackoverflow.com/a/12982689/18753727
-        curr_instr=re.sub(re.compile(
-            '<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});'), '', curr_instr),
-        curr_direction=curr_direction,
-        next_direction=next_direction
+        curr_instr=re.sub(re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});'), '', curr_instr),
+        curr_direction=str(curr_direction),
+        num_steps=str(num_steps),
+        waypoint_dist=waypoint_dist,
+        waypoint_dist_str=waypoint_dist_str,
+        waypoint_duration=waypoint_duration,
+        waypoint_duration_str=waypoint_duration_str
     )
 
 
