@@ -5,7 +5,7 @@ class CurrentData:
     curr_heart_rate = 0  # bpm
     curr_distance = 0.0  # km
     prev_distance = 0.0  # km
-    avg_speed = 0.0  # min/km
+    avg_speed = -1.0  # min/km
 
     start_time = 0.0
     start_time_string = time_utility.get_date_string("%d %B %I:%M %p")
@@ -28,7 +28,7 @@ class CurrentData:
         cls.curr_heart_rate = 0
         cls.curr_distance = 0.0
         cls.prev_distance = 0.0
-        cls.avg_speed = 0.0
+        cls.avg_speed = -1.0
 
         cls.start_time = 0.0
         cls.start_time_string = time_utility.get_date_string("%d %B %I:%M %p")

@@ -16,7 +16,7 @@ class RunningTrainingMode(Enum):
 
 class SpeedTrainingStats:
     distance_interval = 0.4  # km
-    time_info_active = 5  # secs
+    num_active_iterations = 5  # number of times to update stats
     update_interval = 1  # secs
     training_speed_tolerance = 0.5  # min/km
     direction_distance_tolerance = 20  # m
@@ -31,12 +31,13 @@ has_running = False
 has_direction = False
 latest_start_time = 0.0
 waypoint_radius = 20  # meters
-destination_radius = 10  # meters
+dest_radius = 10  # meters
 
 
-def is_item_in_queue(queue, item):
-    with queue.mutex:
-        return item in queue.queue
+def is_item_in_queue(item):
+    global request_queue
+    with request_queue.mutex:
+        return item in request_queue.queue
 
 
 def get_exercise_data(real_wearos):
@@ -67,16 +68,16 @@ def get_exercise_data(real_wearos):
     elif socket_data_type == DataTypes.REQUEST_RUNNING_DATA:
         # check is_processing_running_request just in case the next request is sent before the previous request is
         # processed finished
-        if is_processing_running or not is_item_in_queue(request_queue, DataTypes.REQUEST_RUNNING_DATA):
-            print('received running request')
+        print('received running request')
+        has_running = True
+        if is_processing_running or not is_item_in_queue(DataTypes.REQUEST_RUNNING_DATA):
             request_queue.put(DataTypes.REQUEST_RUNNING_DATA)
-            has_running = True
 
     elif socket_data_type == DataTypes.REQUEST_DIRECTION_DATA:
-        if is_processing_direction or not is_item_in_queue(request_queue, DataTypes.REQUEST_DIRECTION_DATA):
-            print('received direction request')
+        print('received direction request')
+        has_direction = True
+        if is_processing_direction or not is_item_in_queue(DataTypes.REQUEST_DIRECTION_DATA):
             request_queue.put(DataTypes.REQUEST_DIRECTION_DATA)
-            has_direction = True
 
     elif socket_data_type == DataTypes.REQUEST_SUMMARY_DATA:
         image = running_data_handler.get_static_maps_image()
@@ -116,45 +117,57 @@ def speed_training_update(training_route, training_speed, real_wearos):
     CurrentData.curr_route = training_route
 
     while True:
-        if has_running or has_direction in request_queue.queue:
-            # print(str(list(request_queue.queue)))
-            loop_speed_training(training_speed, real_wearos)
-            with request_queue.mutex:
-                if has_running:
-                    request_queue.queue.remove(DataTypes.REQUEST_RUNNING_DATA)
-                    is_processing_running = False
-                    has_running = DataTypes.REQUEST_RUNNING_DATA in request_queue.queue
-                if has_direction:
-                    request_queue.queue.remove(DataTypes.REQUEST_DIRECTION_DATA)
-                    is_processing_direction = False
-                    has_direction = DataTypes.REQUEST_DIRECTION_DATA in request_queue.queue
-
-
-def loop_speed_training(training_speed, real_wearos):
-    global total_sec, is_processing_running, is_processing_direction, has_running, has_direction
-
-    # check curr distance with prev distance > 400m every 5 seconds
-    dist_check = (CurrentData.curr_distance - CurrentData.prev_distance) > SpeedTrainingStats.distance_interval
-    if has_running:
-        is_processing_running = True
-        if dist_check:
-            CurrentData.prev_distance = CurrentData.curr_distance
-
-    for _ in range(SpeedTrainingStats.time_info_active):
         threads = []
-
         if has_running:
-            running_thread = threading.Thread(target=process_running_request, args=(training_speed, dist_check))
+            running_thread = threading.Thread(target=loop_running_request, args=(training_speed,))
             threads.append(running_thread)
             running_thread.start()
 
+            with request_queue.mutex:
+                request_queue.queue.remove(DataTypes.REQUEST_RUNNING_DATA)
+                is_processing_running = False
+                has_running = DataTypes.REQUEST_RUNNING_DATA in request_queue.queue
+
         if has_direction:
-            direction_thread = threading.Thread(target=process_direction_request, args=(real_wearos, ))
+            direction_thread = threading.Thread(target=loop_direction_request, args=(real_wearos,))
             threads.append(direction_thread)
             direction_thread.start()
 
+            with request_queue.mutex:
+                request_queue.queue.remove(DataTypes.REQUEST_DIRECTION_DATA)
+                is_processing_direction = False
+                has_direction = DataTypes.REQUEST_DIRECTION_DATA in request_queue.queue
+
         for thread in threads:
+            print(str(thread))
             thread.join()
+
+        time_utility.sleep_seconds(0.2)
+
+
+def loop_running_request(training_speed):
+    global total_sec, has_running, is_processing_running
+
+    is_processing_running = True
+    # check curr distance with prev distance > 400m every 5 seconds
+    dist_check = (CurrentData.curr_distance - CurrentData.prev_distance) > SpeedTrainingStats.distance_interval
+    if dist_check:
+        CurrentData.prev_distance = CurrentData.curr_distance
+
+    for _ in range(SpeedTrainingStats.num_active_iterations):
+        running_thread = threading.Thread(target=process_running_request, args=(training_speed, dist_check))
+        running_thread.start()
+
+        time_utility.sleep_seconds(SpeedTrainingStats.update_interval)
+
+
+def loop_direction_request(real_wearos):
+    global has_direction, is_processing_direction
+
+    is_processing_direction = True
+    for _ in range(SpeedTrainingStats.num_active_iterations):
+        direction_thread = threading.Thread(target=process_direction_request, args=(real_wearos,))
+        direction_thread.start()
 
         time_utility.sleep_seconds(SpeedTrainingStats.update_interval)
 
@@ -182,10 +195,8 @@ def process_direction_request(real_wearos):
             CurrentData.curr_lng = CurrentData.curr_route[0][1]
         else:
             # remove first coordinate with current coordinate
-            print("Before remove: " + str(CurrentData.curr_route))
             CurrentData.curr_route.pop(0)
             CurrentData.curr_route.insert(0, [CurrentData.curr_lat, CurrentData.curr_lng])
-            print("After remove: " + str(CurrentData.curr_route))
 
         result = running_data_handler.get_directions_real(CurrentData.start_time, CurrentData.curr_route,
                                                           CurrentData.bearing, DIRECTIONS_OPTION, ORS_OPTION)
@@ -225,13 +236,14 @@ def process_direction_request(real_wearos):
     CurrentData.curr_steps = int(num_steps)
 
     # if user is near waypoint, waypoint is considered to have been reached and remove waypoint from route
-    print("Waypoint distance: " + str(waypoint_dist))
+    # print("Waypoint distance: " + waypoint_dist_str)
     if waypoint_dist <= waypoint_radius and len(CurrentData.curr_route) > 2:
-        print("waypoint reached")
+        print("Waypoint reached, removing waypoint from route")
         CurrentData.curr_route.pop(1)
 
     # we set a 5 meters radius from destination for the user to be considered to have reached destination
-    if CurrentData.curr_steps == 1 and CurrentData.curr_distance <= destination_radius:
+    if CurrentData.curr_steps == 1 and dest_dist <= dest_radius:
+        print("Destination distance: " + dest_dist_str)
         running_data_handler.send_direction_data(curr_instr="Destination Reached!")
 
     # check for first and last, always show direction data
@@ -245,7 +257,7 @@ def process_direction_request(real_wearos):
         # print("curr_direction: " + curr_direction)
         # check for distance, only show if close by like x meters for example
         if curr_dist <= SpeedTrainingStats.direction_distance_tolerance:
-            # print("curr_dist: " + curr_dist_str)
+            print("curr_dist: " + curr_dist_str)
             running_data_handler.send_direction_data(dest_dist_str, dest_duration_str, curr_dist_str, curr_duration_str,
                                                      curr_instr, curr_direction)
         else:

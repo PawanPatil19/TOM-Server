@@ -74,8 +74,7 @@ def start_learning_service_threaded(image_detector, pointing_real):
     server_thread.start()
 
 
-# def run(hololens_real=False, wearos_real=False, pointing_real=False):
-def run(hololens_real=False, pointing_real=False):
+def run(hololens_real=False, wearos_real=False, pointing_real=False):
     global flag_is_running
 
     flag_is_running = True
@@ -94,8 +93,7 @@ def run(hololens_real=False, pointing_real=False):
 
 
 _hololens = input("Hololens Real (e.g., 0/1)?")
-# _wearos = input("WearOS Real (e.g., 0/1)?")
+_wearos = input("WearOS Real (e.g., 0/1)?")
 _pointing = input("Pointing Detection Real (e.g., 0/1)?")
 
-# run(_hololens == "1", _wearos == "1", _pointing == "1")
-run(_hololens == "1", _pointing == "1")
+run(_hololens == "1", _wearos == "1", _pointing == "1")
