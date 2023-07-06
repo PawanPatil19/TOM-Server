@@ -19,7 +19,7 @@ def start_learning_service(image_detector, pointing_real):
         pointing_data = None
 
         if not pointing_real:
-            if random.randint(0, 20) == 0:
+            if random.randint(0, 30) == 0:
                 pointing_data = finger_pose_data_pb2.FingerPoseData(
                     camera_x=0.5,
                     camera_y=0.5,
@@ -43,7 +43,7 @@ def run(hololens_real=False, pointing_real=False):
 
     video_src = hololens_portal.API_STREAM_VIDEO if hololens_real else 0
 
-    with YoloDetector(video_src, save=False) as yoloDetector:
+    with YoloDetector(video_src, save=False, ) as yoloDetector:
         start_learning_service_threaded(yoloDetector, pointing_real)
         yoloDetector.start()
 

@@ -34,11 +34,11 @@ def get_decoded_socket_data(socket_data):
         data = socket_data_msg.data
 
         if data_type == DataTypes.FINGER_POINTING_DATA:
-            return decode_finger_pose_data(data)
+            return _decode_finger_pose_data(data)
         elif is_request_data_type(data_type):
-            return decode_request_data(data_type, data)
+            return _decode_request_data(data_type, data)
         else:
-            logging.error('Unknown socket_data protobuf type')
+            logging.error(f'Unknown socket_data protobuf type: {data_type}')
             return data_type, None
     except DecodeError:
         logging.error('Received data is not a valid socket_data protobuf message')
@@ -46,12 +46,8 @@ def get_decoded_socket_data(socket_data):
 
 
 # return <type, data>
-def decode_finger_pose_data(data):
+def _decode_finger_pose_data(data):
     try:
-        if isinstance(data, finger_pose_data_pb2.FingerPoseData):
-            print(data)
-            return DataTypes.FINGER_POINTING_DATA, data
-
         finger_pose_data = finger_pose_data_pb2.FingerPoseData()
         finger_pose_data.ParseFromString(data)
 
@@ -62,7 +58,7 @@ def decode_finger_pose_data(data):
 
 
 # return <type, data>
-def decode_request_data(request_type, data):
+def _decode_request_data(request_type, data):
     try:
         request_data = request_data_pb2.RequestData()
         request_data.ParseFromString(data)

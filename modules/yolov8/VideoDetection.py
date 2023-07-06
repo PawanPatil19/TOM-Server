@@ -13,11 +13,11 @@ class VideoDetection:
             self,
             video_path=0,
             inference=True,
-            confidence_level=0.7,
+            confidence_level=0.65,
             model="./modules/yolov8/weights/model.pt",
             save=False,
             save_path="yolo_video_output.avi",
-            object_counter_duration=1,  # set object detection counter duration
+            object_counter_duration=0,  # set object detection counter duration
             # [x1, y1, x2, y2]  the detection region on which detection results should be reported
             detection_region=None,
 
