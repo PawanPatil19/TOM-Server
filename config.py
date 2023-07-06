@@ -10,10 +10,10 @@ ORS_CREDENTIAL_FILE = os.path.join(credential_path, 'ors_credential.json')
 GEOAPIFY_CREDENTIAL_FILE = os.path.join(credential_path, 'geoapify_credential.json')
 
 # 0 for OSM, 1 for google maps
-PLACES_OPTION = 0
+PLACES_OPTION = 1
 # 0 for ORS, 1 for google maps
-DIRECTIONS_OPTION = 0
+DIRECTIONS_OPTION = 1
 # 0 for geoapify, 1 for google maps
-STATIC_MAPS_OPTION = 0
+STATIC_MAPS_OPTION = 1
 # 0 for api key, 1 for localhost
-ORS_OPTION = 1
+ORS_OPTION = 0
