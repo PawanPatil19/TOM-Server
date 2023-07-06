@@ -30,7 +30,8 @@ is_processing_direction = False
 has_running = False
 has_direction = False
 latest_start_time = 0.0
-destination_radius = 5  # meters
+waypoint_radius = 20  # meters
+destination_radius = 10  # meters
 
 
 def is_item_in_queue(queue, item):
@@ -96,31 +97,28 @@ def get_exercise_data(real_wearos):
         print(f'Unsupported data type: {socket_data_type}')
 
 
-def get_training_update(training_mode, start_end_coords, training_speed=None, real_wearos=False):
+def get_training_update(training_mode, training_route, training_speed=None, real_wearos=False):
     if training_mode == RunningTrainingMode.SpeedTraining:
-        speed_training_update(start_end_coords, training_speed, real_wearos)
+        speed_training_update(training_route, training_speed, real_wearos)
     elif training_mode == RunningTrainingMode.DistanceTraining:
-        distance_training_update(start_end_coords)
+        distance_training_update(training_route)
     else:
         print('Unsupported training mode')
 
 
 # assume training route is given as a list of coordinates
-def speed_training_update(start_end_coords, training_speed, real_wearos):
+def speed_training_update(training_route, training_speed, real_wearos):
     # FIXME: Implement this decide the route show all running info intermittently (say evey 400m for 5 seconds -
     #  customizable parameters) show the running speed intermittently when it's higher/lower than the target speed (+
     #  error) - const, may be give visual instructions also
     global is_processing_running, is_processing_direction, has_running, has_direction
 
-    src_lat = start_end_coords[0][0]
-    src_lng = start_end_coords[0][1]
-    dest_lat = start_end_coords[1][0]
-    dest_lng = start_end_coords[1][1]
+    CurrentData.curr_route = training_route
 
-    while not request_queue.empty():
+    while True:
         if has_running or has_direction in request_queue.queue:
             # print(str(list(request_queue.queue)))
-            loop_speed_training(src_lat, src_lng, dest_lat, dest_lng, training_speed, real_wearos)
+            loop_speed_training(training_speed, real_wearos)
             with request_queue.mutex:
                 if has_running:
                     request_queue.queue.remove(DataTypes.REQUEST_RUNNING_DATA)
@@ -132,7 +130,7 @@ def speed_training_update(start_end_coords, training_speed, real_wearos):
                     has_direction = DataTypes.REQUEST_DIRECTION_DATA in request_queue.queue
 
 
-def loop_speed_training(src_lat, src_lng, dest_lat, dest_lng, training_speed, real_wearos):
+def loop_speed_training(training_speed, real_wearos):
     global total_sec, is_processing_running, is_processing_direction, has_running, has_direction
 
     # check curr distance with prev distance > 400m every 5 seconds
@@ -151,8 +149,7 @@ def loop_speed_training(src_lat, src_lng, dest_lat, dest_lng, training_speed, re
             running_thread.start()
 
         if has_direction:
-            direction_thread = threading.Thread(target=process_direction_request,
-                                                args=(src_lat, src_lng, dest_lat, dest_lng, real_wearos))
+            direction_thread = threading.Thread(target=process_direction_request, args=(real_wearos, ))
             threads.append(direction_thread)
             direction_thread.start()
 
@@ -176,18 +173,22 @@ def process_running_request(training_speed, dist_check):
             running_data_handler.send_running_data(speed=CurrentData.avg_speed)
 
 
-def process_direction_request(src_lat, src_lng, dest_lat, dest_lng, real_wearos):
+def process_direction_request(real_wearos):
     print('Processing direction data...')
-    global latest_start_time, destination_radius
+    global latest_start_time, waypoint_radius
     if real_wearos:
         if CurrentData.curr_lat == 0.0 and CurrentData.curr_lng == 0.0:
-            CurrentData.curr_lat = src_lat
-            CurrentData.curr_lng = src_lng
+            CurrentData.curr_lat = CurrentData.curr_route[0][0]
+            CurrentData.curr_lng = CurrentData.curr_route[0][1]
+        else:
+            # remove first coordinate with current coordinate
+            print("Before remove: " + str(CurrentData.curr_route))
+            CurrentData.curr_route.pop(0)
+            CurrentData.curr_route.insert(0, [CurrentData.curr_lat, CurrentData.curr_lng])
+            print("After remove: " + str(CurrentData.curr_route))
 
-        result = running_data_handler.get_directions_real(CurrentData.start_time, CurrentData.curr_lat,
-                                                          CurrentData.curr_lng, dest_lat,
-                                                          dest_lng, CurrentData.bearing,
-                                                          DIRECTIONS_OPTION, ORS_OPTION)
+        result = running_data_handler.get_directions_real(CurrentData.start_time, CurrentData.curr_route,
+                                                          CurrentData.bearing, DIRECTIONS_OPTION, ORS_OPTION)
     else:
         result = running_data_handler.get_directions_mock(total_sec)
 
@@ -204,6 +205,10 @@ def process_direction_request(src_lat, src_lng, dest_lat, dest_lng, real_wearos)
     curr_instr = result.curr_instr
     curr_direction = result.curr_direction
     num_steps = result.num_steps
+    waypoint_dist = result.waypoint_dist
+    waypoint_dist_str = result.waypoint_dist_str
+    waypoint_duration = result.waypoint_duration
+    waypoint_duration_str = result.waypoint_duration_str
 
     # Check if CurrentData is a new exercise/route (use start time to differentiate)
     if latest_start_time != CurrentData.start_time:
@@ -218,6 +223,13 @@ def process_direction_request(src_lat, src_lng, dest_lat, dest_lng, real_wearos)
         CurrentData.total_steps = int(num_steps)
 
     CurrentData.curr_steps = int(num_steps)
+
+    # if user is near waypoint, waypoint is considered to have been reached and remove waypoint from route
+    print("Waypoint distance: " + str(waypoint_dist))
+    if waypoint_dist <= waypoint_radius and len(CurrentData.curr_route) > 2:
+        print("waypoint reached")
+        CurrentData.curr_route.pop(1)
+
     # we set a 5 meters radius from destination for the user to be considered to have reached destination
     if CurrentData.curr_steps == 1 and CurrentData.curr_distance <= destination_radius:
         running_data_handler.send_direction_data(curr_instr="Destination Reached!")

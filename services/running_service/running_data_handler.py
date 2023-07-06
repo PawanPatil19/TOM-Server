@@ -93,12 +93,8 @@ def save_mock_running_data(total_min):
     CurrentData.avg_speed = total_min / CurrentData.curr_distance
 
 
-def save_mock_coords(start_lat, start_lng, dest_lat, dest_lng):
-    CurrentData.curr_lat = start_lat
-    CurrentData.curr_lng = start_lng
-    CurrentData.dest_lat = dest_lat
-    CurrentData.dest_lng = dest_lng
-    CurrentData.coords.append((start_lat, start_lng))
+def save_mock_coords(training_route):
+    CurrentData.coords = training_route
 
 
 def save_real_running_data(decoded_data):
@@ -111,8 +107,8 @@ def save_real_running_data(decoded_data):
     CurrentData.exercise_type = decoded_data.exercise_type
     CurrentData.curr_lat = decoded_data.curr_lat
     CurrentData.curr_lng = decoded_data.curr_lng
-    CurrentData.dest_lat = decoded_data.dest_lat
-    CurrentData.dest_lng = decoded_data.dest_lng
+    # CurrentData.dest_lat = decoded_data.dest_lat
+    # CurrentData.dest_lng = decoded_data.dest_lng
     CurrentData.bearing = decoded_data.bearing
     save_real_coords()
 
@@ -275,11 +271,10 @@ def wrap_message_with_metadata(data, data_type):
     return socket_data.SerializeToString()
 
 
-def get_directions_real(start_time, curr_lat, curr_lng, dest_lat, dest_lng, bearing, option, ors_option=0):
+def get_directions_real(start_time, training_route, bearing, option, ors_option=0):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    result = loop.run_until_complete(get_walking_directions(
-        start_time, curr_lat, curr_lng, dest_lat, dest_lng, bearing, option, ors_option))
+    result = loop.run_until_complete(get_walking_directions(start_time, training_route, bearing, option, ors_option))
     loop.close()
     return result
 

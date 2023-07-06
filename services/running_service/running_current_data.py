@@ -14,10 +14,10 @@ class CurrentData:
 
     curr_lat = 0.0
     curr_lng = 0.0
-    dest_lat = 0.0
-    dest_lng = 0.0
 
-    coords = []
+    curr_route = []  # list of predefined coordinates by user? that have not been reached yet
+    coords = []  # actual coordinates user has travelled
+
     map_size = (600, 400)  # width, height
     bearing = 0
     total_steps = 0
@@ -38,7 +38,9 @@ class CurrentData:
         cls.curr_lat = 0.0
         cls.curr_lng = 0.0
 
+        cls.curr_route = []
         cls.coords = []
+
         cls.map_size = (600, 400)
         cls.bearing = 0
         cls.total_steps = 0

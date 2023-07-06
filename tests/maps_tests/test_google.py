@@ -40,13 +40,16 @@ locations_sample_response_google = [LocationData(address='Computing Dr, Singapor
                                                  latitude=1.2823257,
                                                  longitude=103.8455755)]
 
-directions_sample_response_google = DirectionData(start_time=0, update_time=1687242228802, dest_dist=587,
-                                                  dest_dist_str='0.6 km', dest_duration=457, dest_duration_str='8 mins',
-                                                  curr_dist=192, curr_dist_str='0.2 km', curr_duration=128,
-                                                  curr_duration_str='2 mins',
-                                                  curr_instr='Head south on Business Link toward Heng Mui Keng Terrace',
-                                                  curr_direction="165", num_steps="5",
+directions_sample_response_google = DirectionData(start_time=0, update_time=1688547488474, dest_dist=1039,
+                                                  dest_dist_str='1039 m', dest_duration=741, dest_duration_str='13 min',
+                                                  curr_dist=35, curr_dist_str='35 m', curr_duration=33,
+                                                  curr_duration_str='1 min',
+                                                  curr_instr='Head west toward Kent Ridge Dr', curr_direction='189',
+                                                  num_steps='9', waypoint_dist=251, waypoint_dist_str='0.3 km',
+                                                  waypoint_duration=195, waypoint_duration_str='3 mins',
                                                   error_message='')
+
+waypoints = [[1.2934043, 103.7730927], [1.2925769, 103.7725056], [1.2934142, 103.7704343], [1.2951112, 103.7697015]]
 
 
 @pytest.mark.asyncio
@@ -58,7 +61,7 @@ async def test_locations_google_success():
 
 @pytest.mark.asyncio
 async def test_directions_google_success():
-    response = await get_walking_directions(0, 1.2936937, 103.7752589, 1.293326, 103.7715489, 45, 1)
+    response = await get_walking_directions(0, waypoints, 45, 1)
     assert response.start_time == directions_sample_response_google.start_time
     assert response.dest_dist == directions_sample_response_google.dest_dist
     assert response.dest_dist_str == directions_sample_response_google.dest_dist_str
@@ -71,6 +74,10 @@ async def test_directions_google_success():
     assert response.curr_instr == directions_sample_response_google.curr_instr
     assert response.curr_direction == directions_sample_response_google.curr_direction
     assert response.num_steps == directions_sample_response_google.num_steps
+    assert response.waypoint_dist == directions_sample_response_google.waypoint_dist
+    assert response.waypoint_dist_str == directions_sample_response_google.waypoint_dist_str
+    assert response.waypoint_duration == directions_sample_response_google.waypoint_duration
+    assert response.waypoint_duration_str == directions_sample_response_google.waypoint_duration_str
     assert response.error_message == directions_sample_response_google.error_message
 
 

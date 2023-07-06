@@ -10,32 +10,28 @@ from services.running_service.running_data_handler import save_mock_coords
 from services.running_service.running_service import get_exercise_data, get_training_update, RunningTrainingMode
 
 flag_is_running = False
-# start is set to Kings cross station pancras in London, approximately where the start of the simulated route on
-# wearOS would be.
-start_lat = 51.5301891
-start_lng = -0.1235101
-# destination is set to be Angel station London for now, since the simulated route on wearOS would pass by it.
-dest_lat = 51.5317887
-dest_lng = -0.1064218
+# based on the simulated route on wearOS, starts from Kings Cross station to Europcar Kings Cross in London.
+training_route = [[51.530211685534, -0.12388666083292], [51.53080391412693, -0.12166741887329217],
+                  [51.531002439838325, -0.11902617965388047], [51.53118923468958, -0.11651644992640586],
+                  [51.531362914423525, -0.11416463561058425]]
 
 
 def start_running_service(real_wearos):
-    global flag_is_running, start_lat, start_lng, dest_lat, dest_lng
+    global flag_is_running, training_route
     training_mode = RunningTrainingMode.SpeedTraining
-    start_end_coords = [(start_lat, start_lng), (dest_lat, dest_lng)]
     target_speed = 8  # min/km
 
     while flag_is_running:
-        get_training_update(training_mode, start_end_coords, target_speed, real_wearos)
+        get_training_update(training_mode, training_route, target_speed, real_wearos)
 
 
 def start_wearos(real_wearos):
-    global flag_is_running, start_lat, start_lng, dest_lat, dest_lng
+    global flag_is_running
 
     CurrentData.reset_values()
 
     if not real_wearos:
-        save_mock_coords(start_lat, start_lng, dest_lat, dest_lng)
+        save_mock_coords(training_route)
 
     while flag_is_running:
         get_exercise_data(real_wearos)

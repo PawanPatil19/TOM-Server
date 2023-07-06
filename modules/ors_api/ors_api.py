@@ -36,11 +36,12 @@ def create_ors_client(option):
         raise ValueError("Invalid option.")
 
 
-async def find_directions_ors(start_time, src_lat, src_lng, dest_lat, dest_lng, bearing, option):
-    coords = [[src_lng, src_lat], [dest_lng, dest_lat]]
-    client = create_ors_client(option)
+async def find_directions_ors(start_time, coordinates, bearing, option):
+    # lat lng is switched for ors
+    switch_coordinates = [[coord[1], coord[0]] for coord in coordinates]
 
-    response = client.directions(coords, profile='foot-walking', format="geojson", maneuvers=True)
+    client = create_ors_client(option)
+    response = client.directions(switch_coordinates, profile='foot-walking', format="geojson", maneuvers=True)
 
     features = response["features"]
     properties = features[0]["properties"]
@@ -48,8 +49,11 @@ async def find_directions_ors(start_time, src_lat, src_lng, dest_lat, dest_lng, 
     summary = properties["summary"]
     dest_dist = summary["distance"]
     dest_duration = summary["duration"]
+    waypoint_dist = math.ceil(segments[0]["distance"])
+    waypoint_dist_str = f"{waypoint_dist} m"
+    waypoint_duration = math.ceil(segments[0]["duration"])
+    waypoint_duration_str = f"{math.ceil(waypoint_duration / 60)} min"
     steps = segments[0]["steps"]
-    # print("Steps:", steps)
 
     curr_step = steps[0]
     curr_dist = curr_step["distance"]
@@ -60,8 +64,15 @@ async def find_directions_ors(start_time, src_lat, src_lng, dest_lat, dest_lng, 
     curr_bearing_before = bearing
     curr_bearing_after = curr_maneuver["bearing_after"]
     curr_direction = maps_util.calculate_turn_angle(curr_bearing_before, curr_bearing_after)
-    # last step is just 0m to indicate destination reached, so we use the second last step instead
-    num_steps = len(steps) - 1 if len(steps) > 1 else 1
+
+    # last step in each segment is just 0m to indicate waypoint reached, so we use the second last step instead
+    num_coordinates = len(coordinates)
+    num_steps = 0
+    for segment in segments:
+        num_steps += len(segment["steps"])
+    num_steps -= num_coordinates - 1
+    if num_steps <= 0:
+        num_steps = 1
     
     return DirectionData(
         start_time=start_time,
@@ -76,5 +87,9 @@ async def find_directions_ors(start_time, src_lat, src_lng, dest_lat, dest_lng, 
         curr_duration_str=f"{math.ceil(curr_duration / 60)} min",
         curr_instr=curr_instr,
         curr_direction=str(curr_direction),
-        num_steps=str(num_steps)
+        num_steps=str(num_steps),
+        waypoint_dist=waypoint_dist,
+        waypoint_dist_str=waypoint_dist_str,
+        waypoint_duration=waypoint_duration,
+        waypoint_duration_str=waypoint_duration_str,
     )
