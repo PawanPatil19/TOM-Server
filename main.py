@@ -6,7 +6,6 @@ import modules.websocket_server.socket_server as socket_server
 from modules.dataformat import finger_pose_data_pb2
 import services.learning_service.learning_service as learning_service
 from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
-from modules.langchain_llm.LangChainTextGenerator import LangChainTextGenerator as TextGenerator
 from services.running_service.running_current_data import CurrentData
 from services.running_service.running_data_handler import save_mock_coords
 from services.running_service.running_service import get_exercise_data, get_training_update, RunningTrainingMode
@@ -81,9 +80,9 @@ def run(hololens_real=False, wearos_real=False, pointing_real=False):
     flag_is_running = True
     socket_server.start_server_threaded()
 
-    start_wearos_threaded(wearos_real)
-
-    start_running_service_threaded(wearos_real)
+    # start_wearos_threaded(wearos_real)
+    #
+    # start_running_service_threaded(wearos_real)
 
     video_src = hololens_portal.API_STREAM_VIDEO if hololens_real else 0
 
@@ -96,6 +95,6 @@ def run(hololens_real=False, wearos_real=False, pointing_real=False):
 
 _hololens = input("Hololens Real (e.g., 0/1)?")
 _wearos = input("WearOS Real (e.g., 0/1)?")
-_pointing = input("Pointing Detection Real (e.g., 0/1)?"
+_pointing = input("Pointing Detection Real (e.g., 0/1)?")
 
 run(_hololens == "1", _wearos == "1", _pointing == "1")
