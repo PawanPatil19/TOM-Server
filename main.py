@@ -65,46 +65,10 @@ def get_translation(object):
     return object + " - " + translation
 
 
-def _monitor_yolo_detection(detector, min_detection_count_percentage=0.6, update_gap=1):
-    global flag_is_running
-
-    detection_init = Counter()
-
-    while flag_is_running:
-        detections = detector.get_detect_object_percentage()
-
-        detected_objects = [key for key, value in detections.items() if
-                            value > min_detection_count_percentage]
-
-        detection_now = Counter(detected_objects)
-        detection_diff = Counter(detection_now)
-        detection_diff.subtract(detection_init)
-
-        print(detection_diff)
-
-        result = ''
-
-        for item in detection_diff:
-            if detection_diff[item] <= -1:
-                result += f'INSTRUCT|,'
-            if detection_diff[item] >= 1:
-                result += f'INSTRUCT|{get_translation(item)},'
-
-        if result != '':
-            send_socket_server(result)
-
-        detection_init = detection_now
-
-        time_utility.sleep_seconds(update_gap)
-
-
 def start_yolo(video_src):
     global flag_is_running
-
     try:
         with YoloDetector(video_src, save=False) as yoloDetector:
-            threading.Thread(target=_monitor_yolo_detection, args=(yoloDetector, 0.6, 1,),
-                             daemon=True).start()
             yoloDetector.start()
     except KeyboardInterrupt:
         print("Yolo module stopped")
