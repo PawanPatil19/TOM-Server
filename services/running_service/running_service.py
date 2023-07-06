@@ -142,6 +142,8 @@ def speed_training_update(training_route, training_speed, real_wearos):
             print(str(thread))
             thread.join()
 
+        time_utility.sleep_seconds(0.2)
+
 
 def loop_running_request(training_speed):
     global total_sec, has_running, is_processing_running
