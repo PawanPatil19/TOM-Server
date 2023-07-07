@@ -3,7 +3,6 @@ import modules.hololens.hololens_portal as hololens_portal
 import modules.websocket_server.socket_server as socket_server
 import modules.utilities.time as time_utility
 from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
-from modules.langchain_llm.LangChainTextGenerator import LangChainTextGenerator as TextGenerator
 from services.running_service.running_current_data import CurrentData
 from services.running_service.running_service import get_exercise_data, get_training_update, RunningTrainingMode
 
@@ -43,23 +42,6 @@ def start_wearos_threaded(wearos_real):
 def start_running_service_threaded(wearos_real):
     server_thread = threading.Thread(target=start_running_service, args=(wearos_real,), daemon=True)
     server_thread.start()
-
-
-# text_generator = TextGenerator(0)
-# translation_map = {}
-#
-#
-# def get_translation(object):
-#     global translation_map
-#
-#     translation = translation_map.get(object)
-#     if translation is not None:
-#         return object + " - " + translation
-#
-#     translation = text_generator.generate_response(
-#         "What is the Spanish translation of {input}? Provide only the answer.", object)
-#     translation_map[object] = translation
-#     return object + " - " + translation
 
 
 def start_yolo(video_src):
