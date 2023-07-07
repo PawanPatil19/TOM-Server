@@ -1,11 +1,12 @@
 import asyncio
 import logging
+import math
 import random
 
 from google.protobuf.message import DecodeError
 
 from modules.maps.direction_data import DirectionData
-from modules.maps.maps_util import calculate_distance
+from modules.maps.maps_util import calculate_distance, get_direction_str
 
 import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
@@ -182,7 +183,6 @@ def send_running_alert(speed=None, distance=None, instruction=None):
 # change this args
 def send_direction_data(dest_dist_str=None, dest_duration_str=None, curr_dist_str=None, curr_duration_str=None,
                         curr_instr=None, curr_direction=None, num_steps=None):
-
     direction_data_proto = direction_data_pb2.DirectionData()
     if dest_dist_str is not None:
         direction_data_proto.dest_dist = dest_dist_str
@@ -279,75 +279,54 @@ def get_directions_real(start_time, training_route, bearing, option, ors_option=
     return result
 
 
-last_update_time = 0
-next_reset_time = 0
-reset_direction = False
-
-
-def get_directions_mock(total_sec):
-    global last_update_time, next_reset_time, reset_direction
-
-    # directions = ''
-    direction_data = DirectionData()
-    dest_dist = 800
+def get_directions_mock():
+    dest_dist = random.randint(500, 1500)
     dest_dist_str = f'{dest_dist} m'
-    dest_duration = 100
-    dest_duration_str = f'{dest_duration} s'
-    curr_dist = 80
+    dest_duration = random.randint(120, 360)
+    dest_duration_str = f"{math.ceil(dest_duration / 60)} min"
+
+    instruction_map = {
+        "straight": "Head north",
+        "turn_slight_right": "Head northeast",
+        "turn_right": "Head east",
+        "turn_sharp_right": "Head southeast",
+        "u_turn": "Head south",
+        "turn_sharp_left": "Head southwest",
+        "turn_left": "Head west",
+        "turn_slight_left": "Head northwest"
+    }
+
+    waypoint_dist = random.randint(21, 400)
+    waypoint_dist_str = f'{waypoint_dist} m'
+    waypoint_duration = random.randint(1, 50)
+    waypoint_duration_str = f'{math.ceil(waypoint_duration / 60)} min'
+    curr_dist = random.randint(21, waypoint_dist)
     curr_dist_str = f'{curr_dist} m'
-    curr_duration = 10
-    curr_duration_str = f'{curr_duration} s'
-    curr_instr = 'Head north'
-    num_steps = "4"
+    curr_duration = random.randint(1, waypoint_duration)
+    curr_duration_str = f'{math.ceil(curr_duration) / 60} min'
+    num_steps = random.randint(2, 15)
+    rand_dir = random.randint(0, 360)
+    curr_instr = instruction_map.get(get_direction_str(rand_dir))
 
-    directions_list = [
-        "straight",
-        "turn_slight_right",
-        "turn_right",
-        "turn_sharp_right",
-        "u_turn",
-        "turn_sharp_left",
-        "turn_left",
-        "turn_slight_left"
-    ]
-
-    if total_sec > last_update_time + 25:
-        # rand_dir = random.randint(1, 3)
-        # if rand_dir == 1:
-        #     directions = 'ANGLE|270,INSTRUCT|Turn Left,'
-        # elif rand_dir == 2:
-        #     directions = 'ANGLE|0,INSTRUCT|Go Straight,'
-        # elif rand_dir == 3:
-        #     directions = 'ANGLE|90,INSTRUCT|Turn Right,'
-        # else:
-        #     directions = ''
-        random_direction = random.choice(directions_list)
-
-        last_update_time = total_sec
-        reset_direction = False
-        next_reset_time = last_update_time + 3
-        direction_data = DirectionData(
-            time_utility.get_current_millis(),
-            time_utility.get_current_millis(),
-            dest_dist,
-            dest_dist_str,
-            dest_duration,
-            dest_duration_str,
-            curr_dist,
-            curr_dist_str,
-            curr_duration,
-            curr_duration_str,
-            curr_instr,
-            random_direction,
-            num_steps
-        )
-
-    if total_sec > next_reset_time and not reset_direction:
-        # directions = 'ANGLE|-1,INSTRUCT|,'
-        direction_data = DirectionData()
-        reset_direction = True
-
-    return direction_data
+    return DirectionData(
+        CurrentData.start_time,
+        time_utility.get_current_millis(),
+        dest_dist,
+        dest_dist_str,
+        dest_duration,
+        dest_duration_str,
+        curr_dist,
+        curr_dist_str,
+        curr_duration,
+        curr_duration_str,
+        curr_instr,
+        rand_dir,
+        str(num_steps),
+        waypoint_dist,
+        waypoint_dist_str,
+        waypoint_duration,
+        waypoint_duration_str
+    )
 
 
 def get_static_maps_image():
