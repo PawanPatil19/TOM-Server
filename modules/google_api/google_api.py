@@ -109,7 +109,7 @@ async def find_directions_google(start_time, coordinates, bearing):
         curr_duration_str=curr_duration_str,
         # regex to remove html tags, from https://stackoverflow.com/a/12982689/18753727
         curr_instr=re.sub(re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});'), '', curr_instr),
-        curr_direction=str(curr_direction),
+        curr_direction=curr_direction,
         num_steps=str(num_steps),
         waypoint_dist=waypoint_dist,
         waypoint_dist_str=waypoint_dist_str,

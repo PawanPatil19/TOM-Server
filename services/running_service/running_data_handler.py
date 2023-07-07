@@ -9,7 +9,7 @@ from modules.maps.maps_util import calculate_distance
 
 import modules.utilities.time as time_utility
 import modules.websocket_server.socket_server as socket_server
-from config import DIRECTIONS_OPTION, ORS_OPTION, STATIC_MAPS_OPTION
+from config import STATIC_MAPS_OPTION
 from modules.dataformat import direction_data_pb2
 from modules.dataformat import exercise_wear_os_data_pb2
 from modules.dataformat import request_data_pb2
@@ -88,7 +88,7 @@ def decode_request_data(request_type, data):
 
 
 def save_mock_running_data(total_min):
-    CurrentData.curr_distance += (random.randint(1, 5) / 1000)  # in km
+    CurrentData.curr_distance += (random.randint(1, 3) / 1000)  # in km
     CurrentData.curr_heart_rate = random.randint(70, 80)
     CurrentData.avg_speed = total_min / CurrentData.curr_distance
 
@@ -200,7 +200,7 @@ def send_direction_data(dest_dist_str=None, dest_duration_str=None, curr_dist_st
         direction_data_proto.curr_instr = curr_instr
 
     if curr_direction is not None:
-        direction_data_proto.curr_direction = curr_direction
+        direction_data_proto.curr_direction = str(curr_direction)
 
     if num_steps is not None:
         direction_data_proto.num_steps = num_steps

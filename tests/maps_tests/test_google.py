@@ -44,7 +44,7 @@ directions_sample_response_google = DirectionData(start_time=0, update_time=1688
                                                   dest_dist_str='1039 m', dest_duration=741, dest_duration_str='13 min',
                                                   curr_dist=35, curr_dist_str='35 m', curr_duration=33,
                                                   curr_duration_str='1 min',
-                                                  curr_instr='Head west toward Kent Ridge Dr', curr_direction='189',
+                                                  curr_instr='Head west toward Kent Ridge Dr', curr_direction=189,
                                                   num_steps='9', waypoint_dist=251, waypoint_dist_str='0.3 km',
                                                   waypoint_duration=195, waypoint_duration_str='3 mins',
                                                   error_message='')
