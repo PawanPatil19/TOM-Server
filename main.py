@@ -12,8 +12,10 @@ from services.running_service.running_service import get_exercise_data, get_trai
 
 flag_is_running = False
 # based on the simulated route on wearOS, starts from Kings Cross station to Europcar Kings Cross in London.
-training_route = [[51.530211685534, -0.12388666083292], [51.53080391412693, -0.12166741887329217],
-                  [51.531002439838325, -0.11902617965388047], [51.53118923468958, -0.11651644992640586],
+training_route = [[51.530211685534, -0.12388666083292],
+                  [51.53080391412693, -0.12166741887329217],
+                  [51.531002439838325, -0.11902617965388047],
+                  [51.53118923468958, -0.11651644992640586],
                   [51.531362914423525, -0.11416463561058425]]
 
 
@@ -86,7 +88,7 @@ def run(hololens_real=False, wearos_real=False, pointing_real=False):
 
     video_src = hololens_portal.API_STREAM_VIDEO if hololens_real else 0
 
-    with YoloDetector(video_src, save=False, ) as yoloDetector:
+    with YoloDetector(video_src, save=False, inference=True, ) as yoloDetector:
         if not wearos_real:
             start_learning_service_threaded(yoloDetector, pointing_real)
         yoloDetector.start()

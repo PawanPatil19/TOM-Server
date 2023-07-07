@@ -12,7 +12,7 @@ class VideoDetection:
     def __init__(
             self,
             video_path=0,
-            inference=True,
+            inference=True, # set to False to hide object detection
             confidence_level=0.65,
             model="./modules/yolov8/weights/model.pt",
             save=False,
@@ -188,14 +188,16 @@ class VideoDetection:
             if self.detection_region is not None:
                 detections = self.get_detection_in_region(detections, self.detection_region)
 
-            labels = [f'{self.class_labels[class_id]} {confidence:0.2f}' for
-                      _, _, confidence, class_id, _ in detections]
+            # show inference results if needed
+            if self.inference:
+                labels = [f'{self.class_labels[class_id]} {confidence:0.2f}' for
+                          _, _, confidence, class_id, _ in detections]
 
-            frame = box_annotator.annotate(
-                scene=frame,
-                detections=detections,
-                labels=labels
-            )
+                frame = box_annotator.annotate(
+                    scene=frame,
+                    detections=detections,
+                    labels=labels
+                )
 
             if self.object_detection_counter:
                 self.object_detection_counter.infer_counting(detections, self.class_labels)
