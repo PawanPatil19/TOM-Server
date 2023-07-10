@@ -24,6 +24,8 @@ class SpeedTrainingStats:
     num_running_iterations = 5
     update_interval_running = 1  # secs
     update_interval_direction = 5  # secs
+    audio_running_freq = 5 # how many running instructions before playing audio
+    audio_direction_freq = 1 # how many direction instructions before playing audio
     training_speed_tolerance = 0.5  # min/km
     direction_distance_tolerance = 20  # m
     correct_speed = False
@@ -32,7 +34,6 @@ class SpeedTrainingStats:
 total_sec = 0
 request_queue = Queue()
 running_update_count = 0
-dist_check = False
 latest_start_time = 0.0
 waypoint_radius = 20  # meters
 dest_radius = 10  # meters
@@ -109,7 +110,7 @@ def get_training_update(training_mode, training_route, training_speed=None, real
 
 # assume training route is given as a list of coordinates
 def speed_training_update(training_route, training_speed, real_wearos):
-    global running_update_count, dist_check
+    global running_update_count
 
     CurrentData.curr_route = training_route
     dist_check = False
@@ -124,19 +125,18 @@ def speed_training_update(training_route, training_speed, real_wearos):
                 if dist_check:
                     CurrentData.prev_distance = CurrentData.curr_distance
 
-            process_running_request(training_speed)
+            preprocess_running_request(training_speed, dist_check)
             with request_queue.mutex:
                 request_queue.queue.remove(DataTypes.REQUEST_RUNNING_DATA)
 
         if is_item_in_queue(DataTypes.REQUEST_DIRECTION_DATA):
-            process_direction_request(real_wearos)
+            preprocess_direction_request(real_wearos)
             with request_queue.mutex:
                 request_queue.queue.remove(DataTypes.REQUEST_DIRECTION_DATA)
         time_utility.sleep_seconds(0.2)
 
 
-def process_running_request(training_speed):
-    global dist_check
+def preprocess_running_request(training_speed, dist_check):
     print('Processing running data...')
     check_correct_speed(training_speed)
     if dist_check:
@@ -164,7 +164,7 @@ def check_correct_speed(training_speed):
         send_running_alert(speed="true", instruction=instruction)
 
 
-def process_direction_request(real_wearos):
+def preprocess_direction_request(real_wearos):
     print('Processing direction data...')
     if real_wearos:
         if CurrentData.curr_lat == 0.0 and CurrentData.curr_lng == 0.0:
@@ -184,7 +184,7 @@ def process_direction_request(real_wearos):
 
 
 def parse_direction_result(result):
-    global latest_start_time, waypoint_radius
+    global latest_start_time
     # result can't be None, it just returns empty DirectionData if no data
     # so no need to check if result is None
     dest_dist_str = result.dest_dist_str
@@ -229,7 +229,7 @@ def parse_direction_result(result):
 
 def send_directions(dest_dist, dest_dist_str, dest_duration_str, curr_dist, curr_dist_str, curr_duration_str,
                     curr_instr, curr_direction):
-    # we set a 5 meters radius from destination for the user to be considered to have reached destination
+    # we set a dest_radius for the user to be considered to have reached destination
     if CurrentData.curr_steps == 1 and dest_dist <= dest_radius:
         print("Destination distance: " + dest_dist_str)
         send_direction_data(curr_instr="Destination Reached!")
