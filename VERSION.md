@@ -11,6 +11,10 @@
 
 ## demo/running_coach
 
+### v2.1
+- make running a service
+- add waypoints (and enable running route)
+
 ### v2.0
 - new UI
 - add Google Maps API for directions, places and static maps
