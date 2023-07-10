@@ -3,6 +3,11 @@
 ## main
 - description
 
+## demo/learning
+
+### v1.0
+- enable to detect pointed objects by finger tip
+- use ChatGPT to generate learning content based on detected object
 
 ## demo/running_coach
 
@@ -41,4 +46,4 @@
 - remove saving token, e.g., `fitbit_credential.json`, `fitbit_token.json`
 
 ## Known issues/limitations
-- 
+- change print to logging

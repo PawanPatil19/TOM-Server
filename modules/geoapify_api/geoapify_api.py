@@ -35,7 +35,6 @@ async def find_static_maps_geoapify(coordinates, size):
         end_coordinate = coordinates[-1]
         markers_str += f"|lonlat:{end_coordinate[1]},{end_coordinate[0]};color:%23ff0000;type:material;size:small;iconsize:small"
 
-    print(markers_str)
     path_str = "polyline:" + ",".join(f"{lng},{lat}" for lat, lng in coordinates) + ";linecolor:%23ff0000"
 
     url = f"{base_url}?apiKey={api_key}&width={size[0]}&height={size[1]}&marker={markers_str}&geometry={path_str}"

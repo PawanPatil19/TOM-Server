@@ -64,7 +64,11 @@ async def send_data_to_websockets(data):
             traceback.print_exc(file=sys.stdout)
             exclude_list.add(_websocket)
 
-    print(f'Sent data: {data}')
+    if isinstance(data, str):
+        print(f'Sent data: {data}')
+    else:
+        print(f'Sent data: {len(data)} bytes')
+
     _CONNECTIONS -= exclude_list
 
 
