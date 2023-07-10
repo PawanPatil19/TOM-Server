@@ -5,6 +5,9 @@
 
 ## demo/learning
 
+### v1.1
+- enable support `demo/running_coach_v2.1`
+
 ### v1.0
 - enable to detect pointed objects by finger tip
 - use ChatGPT to generate learning content based on detected object
