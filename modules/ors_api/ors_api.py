@@ -86,7 +86,7 @@ async def find_directions_ors(start_time, coordinates, bearing, option):
         curr_duration=math.ceil(curr_duration),
         curr_duration_str=f"{math.ceil(curr_duration / 60)} min",
         curr_instr=curr_instr,
-        curr_direction=str(curr_direction),
+        curr_direction=curr_direction,
         num_steps=str(num_steps),
         waypoint_dist=waypoint_dist,
         waypoint_dist_str=waypoint_dist_str,

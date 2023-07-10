@@ -1,13 +1,11 @@
 ﻿import threading
-import random
-
 import modules.hololens.hololens_portal as hololens_portal
 import modules.websocket_server.socket_server as socket_server
+import modules.utilities.time as time_utility
 from modules.dataformat import finger_pose_data_pb2
 import services.learning_service.learning_service as learning_service
 from modules.yolov8.VideoDetection import VideoDetection as YoloDetector
 from services.running_service.running_current_data import CurrentData
-from services.running_service.running_data_handler import save_mock_coords
 from services.running_service.running_service import get_exercise_data, get_training_update, RunningTrainingMode
 
 flag_is_running = False
@@ -29,15 +27,15 @@ def start_running_service(real_wearos):
 
 
 def start_wearos(real_wearos):
-    global flag_is_running
+    global flag_is_running, training_route
 
     CurrentData.reset_values()
 
     if not real_wearos:
-        save_mock_coords(training_route)
+        CurrentData.start_time = time_utility.get_current_millis()
 
     while flag_is_running:
-        get_exercise_data(real_wearos)
+        get_exercise_data(real_wearos, training_route)
 
 
 def start_wearos_threaded(wearos_real):

@@ -7,7 +7,7 @@ directions_sample_response_ors = DirectionData(start_time=0, update_time=1688547
                                                dest_dist_str='1572 m', dest_duration=1132, dest_duration_str='19 min',
                                                curr_dist=36, curr_dist_str='36 m', curr_duration=26,
                                                curr_duration_str='1 min', curr_instr='Head east on Northbound, 7',
-                                               curr_direction='42', num_steps='26', waypoint_dist=350,
+                                               curr_direction=42, num_steps='26', waypoint_dist=350,
                                                waypoint_dist_str='350 m', waypoint_duration=252,
                                                waypoint_duration_str='5 min', error_message='')
 
