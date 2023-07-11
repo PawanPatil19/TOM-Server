@@ -6,8 +6,9 @@ message FingerPoseData {
 //  optional int32 finger = 3 [default = -1];
   optional double camera_x = 4 [default = 0];
   optional double camera_y = 5 [default = 0];
-//  optional double world_x = 6 [default = 0];
-//  optional double world_y = 7 [default = 0];
-//  optional double world_z = 8 [default = 0];
+  optional double camera_z = 6 [default = 0];
+//  optional double world_x = 7 [default = 0];
+//  optional double world_y = 8 [default = 0];
+//  optional double world_z = 9 [default = 0];
 
 }
