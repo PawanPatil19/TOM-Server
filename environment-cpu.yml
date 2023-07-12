@@ -34,3 +34,4 @@ dependencies:
       - googlemaps==4.10.*
       - openrouteservice==2.3.*
       - geographiclib==2.0.*
+      - google-cloud-vision==3.4.*
