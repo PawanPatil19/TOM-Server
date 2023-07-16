@@ -1,4 +1,5 @@
 from google.cloud import vision
+import cv2
 import pandas as pd
 import os
 import sys
@@ -60,8 +61,6 @@ class VisionClient:
         return texts
 
     def detect_text_image_file(self, image_path):
-        """Detects text in the file."""
-
         with open(image_path, "rb") as image_file:
             content = image_file.read()
 
@@ -70,10 +69,16 @@ class VisionClient:
         return self._detect_text_image(image)
 
     def detect_text_image_uri(self, uri):
-        """Detects text in the file located in Google Cloud Storage or on the Web."""
-
         image = vision.Image()
         image.source.image_uri = uri
+
+        return self._detect_text_image(image)
+
+    def detect_text_frame(self, opencv_frame):
+        _, encoded_image = cv2.imencode('.png', opencv_frame)
+        image_content = encoded_image.tobytes()
+
+        image = vision.Image(content=image_content)
 
         return self._detect_text_image(image)
 
