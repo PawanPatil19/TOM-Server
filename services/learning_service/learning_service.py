@@ -164,6 +164,20 @@ def same_pointing_location(camera_x, camera_y, finger_pose_data, offset):
     return abs(camera_x - finger_x) < offset and abs(camera_y - finger_y) < offset
 
 
+def _get_interest_objects_bounding_box(actual_bounding_box, image_width, image_height):
+    # x1 = _get_value(min(int(actual_bounding_box[0]), finger_pointing_region[0]), image_width)
+    # y1 = _get_value(min(int(actual_bounding_box[1]), finger_pointing_region[1]), image_height)
+    # x2 = _get_value(max(int(actual_bounding_box[2]), finger_pointing_region[2]), image_width)
+    # y2 = _get_value(max(int(actual_bounding_box[1]), finger_pointing_region[1]), image_height)
+
+    x1 = _get_value(int(actual_bounding_box[0] + 0.5), image_width)
+    y1 = _get_value(int(actual_bounding_box[1] + 0.5), image_height)
+    x2 = _get_value(int(actual_bounding_box[2] + 0.5), image_width)
+    y2 = _get_value(int(actual_bounding_box[3] + 0.5), image_height)
+
+    return [x1, y1, x2, y2]
+
+
 def _get_detected_object_and_text(finger_pose_data):
     global _image_detector, _text_detection_sent_time
 
@@ -183,16 +197,26 @@ def _get_detected_object_and_text(finger_pose_data):
     detections = _image_detector.get_last_detection()
     # FIXME: check detection time and not null
     CLASS_ID_PERSON = 0
-    detections = _image_detector.get_detection_in_region(detections, finger_pointing_region)
+    detections = _image_detector.get_detection_in_region(detections, finger_pointing_region,
+                                                         [CLASS_ID_PERSON])
     class_labels = _image_detector.get_class_labels()
     objects = [class_labels[class_id] for _, _, _, class_id, _ in detections]
-    unique_objects = [s for s in set(objects) if s != 'person']
+    unique_objects = [s for s in set(objects)]
     print(f'Objects[{len(unique_objects)}]: {unique_objects}')
 
     object_of_interest = None
     interested_text_region = finger_pointing_region
     if len(unique_objects) > 0:
         object_of_interest = unique_objects[0]
+        object_of_interest_class_id = list(class_labels.keys())[
+            list(class_labels.values()).index(object_of_interest)]
+        object_of_interest_bounding_box = \
+        [bounding_box for bounding_box, _, _, class_id, _ in detections if
+         class_id == object_of_interest_class_id][0]
+        interested_text_region = _get_interest_objects_bounding_box(object_of_interest_bounding_box,
+                                                                    frame_width, frame_height)
+        # print(
+        #     f'Object of interest: {object_of_interest}-{object_of_interest_class_id}-{object_of_interest_bounding_box}')
 
     # get the text content
     text_content = _detect_text(frame, interested_text_region)
@@ -228,7 +252,7 @@ def _get_value(actual, max_value):
     return actual
 
 
-def _detect_text(frame, image_region):
+def _detect_text(frame, text_region):
     global _text_detection_sent_time
 
     if time_utility.get_current_millis() - _text_detection_sent_time < LearningConfig.text_data_read_duration_millis:
@@ -238,9 +262,10 @@ def _detect_text(frame, image_region):
     # height, width, channels = frame.shape
     # print(f'The dimensions of the frame are: Width = {width}, Height = {height}, Channels = {channels}')
 
+    print(f'text_region: {text_region}')
     try:
-        cropped_frame = image_utility.get_cropped_frame(frame, image_region[0], image_region[1],
-                                                        image_region[2], image_region[3])
+        cropped_frame = image_utility.get_cropped_frame(frame, text_region[0], text_region[1],
+                                                        text_region[2], text_region[3])
         text_contents, _, _ = _get_text_detector().detect_text_frame(cropped_frame)
         print(f'Texts[{len(text_contents)}]: {text_contents}')
 
