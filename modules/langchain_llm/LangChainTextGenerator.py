@@ -32,3 +32,6 @@ class LangChainTextGenerator:
 
         # print(language_prompt, language_prompt.format(input=input))
         return self.llm(language_prompt.format(input=input)).strip()
+
+    def generate_response(self, prompt):
+        return self.llm(prompt).strip()

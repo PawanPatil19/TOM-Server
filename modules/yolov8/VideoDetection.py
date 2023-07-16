@@ -225,7 +225,7 @@ class VideoDetection:
         return detection_results
 
     @staticmethod
-    def get_detection_in_region(detections, detection_region):
+    def get_detection_in_region(detections, detection_region, exclude_class_ids=[]):
 
         # initialize a instance of Detection class with empty values
         detections_in_specified_region = sv.Detections(xyxy=np.empty((0, 4)), mask=None,
@@ -236,13 +236,17 @@ class VideoDetection:
         tmp_xyxy = []
         tmp_class_id = []
         tmp_confidence = []
+
+        # [bounding_boxes, mask, confidence, class_id, tracker_id]
         for detection in detections:
-            # add to detection_results only if the object is in the specified region
-            # if detection[0][0] > self.detection_region[0] and detection[0][1] > self.detection_region[1] and detection[0][2] < self.detection_region[2] and detection[0][3] < self.detection_region[3]:
-            if VideoDetection.intersects(detection[0], detection_region):
-                tmp_xyxy.append(detection[0])
-                tmp_class_id.append(detection[3])
-                tmp_confidence.append(detection[2])
+            bounding_boxes = detection[0]
+            class_id = detection[3]
+            confidence = detection[2]
+            # add to detection_results only if the object is in the specified region and not in exclude_class_ids
+            if class_id not in exclude_class_ids and VideoDetection.intersects(bounding_boxes, detection_region):
+                tmp_xyxy.append(bounding_boxes)
+                tmp_class_id.append(class_id)
+                tmp_confidence.append(confidence)
 
         detections_in_specified_region.xyxy = np.array(tmp_xyxy)
         detections_in_specified_region.class_id = np.array(tmp_class_id)

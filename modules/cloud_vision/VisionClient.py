@@ -11,54 +11,28 @@ class VisionClient:
     def __init__(self):
         self.client = vision.ImageAnnotatorClient()
 
-    def annotate_image(self, image_uri, log=False):
-        response = self.client.annotate_image({
-            'image': {
-                'source': {
-                    'image_uri': image_uri
-                }
-            }
-        })
-
-        if log:
-            print("response : ", response)
-
-        return self._decode_response(response)
-
-    def _decode_response(self, response):
-
-        # Preprocessing for visualization. 
-        descriptions = []
-        scores = []
-        for label in response.label_annotations:
-            descriptions.append(label.description)
-            scores.append(label.score)
-
-        dic = {"description": descriptions, "score": scores}
-
-        print(dic)
-
-        return dic
-
+    # return a [descriptions, scores, vertices] list
     def _detect_text_image(self, google_vision_image):
+        print("_detect_text_image")
+
         response = self.client.text_detection(image=google_vision_image)
-        texts = response.text_annotations
+        annotations = response.text_annotations
         print("Texts:")
 
-        for text in texts:
-            print(f'\n"{text.description}"')
+        descriptions = []
+        scores = []
+        vertices = []
 
-            vertices = [
-                f"({vertex.x},{vertex.y})" for vertex in text.bounding_poly.vertices
-            ]
-
-            print("bounds: {}".format(",".join(vertices)))
+        for annotation in annotations:
+            descriptions.append(annotation.description)
+            scores.append(annotation.score)
+            vertices.append(annotation.bounding_poly.vertices)
 
         if response.error.message:
             raise Exception(
                 f"{response.error.message}\nFor more info on error messages, check: https://cloud.google.com/apis/design/errors")
 
-        return texts
+        return descriptions, scores, vertices
 
     def detect_text_image_file(self, image_path):
         with open(image_path, "rb") as image_file:

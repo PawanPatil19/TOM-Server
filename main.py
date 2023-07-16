@@ -81,15 +81,14 @@ def run(hololens_real=False, wearos_real=False, pointing_real=False):
     flag_is_running = True
     socket_server.start_server_threaded()
 
-    if wearos_real:
-        start_wearos_threaded(wearos_real)
-        start_running_service_threaded(wearos_real)
+    # if wearos_real:
+    #     start_wearos_threaded(wearos_real)
+    #     start_running_service_threaded(wearos_real)
 
     video_src = hololens_portal.API_STREAM_VIDEO if hololens_real else 0
 
     with YoloDetector(video_src, save=False, inference=True, ) as yoloDetector:
-        if not wearos_real:
-            start_learning_service_threaded(yoloDetector, pointing_real)
+        start_learning_service_threaded(yoloDetector, pointing_real)
         yoloDetector.start()
 
     socket_server.stop_server_threaded()

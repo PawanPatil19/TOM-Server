@@ -8,9 +8,9 @@ from modules.cloud_vision.VisionClient import VisionClient as TextDetector
 
 def test_detect_text_image_uri():
     text_detector = TextDetector()
-    res = text_detector.detect_text_image_uri("gs://cloud-samples-data/vision/ocr/sign.jpg")
+    res, _, _ = text_detector.detect_text_image_uri("gs://cloud-samples-data/vision/ocr/sign.jpg")
 
-    assert res == ""
+    assert ",".join(res) == ""
 
 
 def test_detect_text_frame():
@@ -19,6 +19,6 @@ def test_detect_text_frame():
     ret, frame = cap.read()
 
     text_detector = TextDetector()
-    res = text_detector.detect_text_frame(frame)
+    res, _, _ = text_detector.detect_text_frame(frame)
 
     assert res == ""
