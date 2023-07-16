@@ -32,10 +32,10 @@ A server for TOM
     - [Configure](https://docs.microsoft.com/en-us/windows/mixed-reality/develop/platform-capabilities-and-apis/using-the-windows-device-portal) the Hololens Device Portal. Save [your credentials](https://docs.microsoft.com/en-us/windows/mixed-reality/develop/platform-capabilities-and-apis/using-the-windows-device-portal#creating-a-username-and-password) to `credential/hololens_credential.json`
   - Create a file `credential/fitbit_credential.json` with Fitbit credentials such as `{"client_id": "ID","client_secret": "SECRET"}` 
   - Create a file `credential/openai_credential.json` with OpenAI credentials such as `{"openai_api_key": "KEY"}`
-  - Create a file `credential/google_credential.json` with Google credentials such as `{"map_api_key": "KEY"}`
+  - Create a file `credential/google_credential.json` with Google credentials such as `{"map_api_key": "KEY", "vision_api_key": "KEY"}`
   - Create a file `credential/ors_credential.json` with Openrouteservice credentials such as `{"map_api_key": "KEY"}`
   - Create a file `credential/geoapify_credential.json` with Geoapify credentials such as `{"map_api_key": "KEY"}`
-  - Create a file `credential/cloud_vision_credentials.json` with Google Cloud Vision API credentials
+  - Create a file `credential/cloud_vision_credentials.json` with Google Cloud Vision API credentials (follow [authentication](https://github.com/GoogleCloudPlatform/hackathon-toolkit/blob/master/vision/README.md#authentication) to get json key file)
   
 
 
@@ -65,7 +65,8 @@ A server for TOM
 
 
 ## Third-party libraries
-- [python-fitbit](https://github.com/orcasgit/python-fitbit)
+- [cloud-vision-api-python](https://codelabs.developers.google.com/codelabs/cloud-vision-api-python), [google-cloud-vision](https://pypi.org/project/google-cloud-vision/),
+- [Detic](https://github.com/facebookresearch/Detic)
 - [google-maps](https://developers.google.com/maps/documentation), [google-maps-services-python](https://github.com/googlemaps/google-maps-services-python)
 - [OpenAI](https://platform.openai.com/docs/api-reference)
 - [Nominatim OpenStreetMap](https://nominatim.org/release-docs/latest/api/Overview/)
@@ -74,3 +75,4 @@ A server for TOM
 - [GeographicLib](https://geographiclib.sourceforge.io/html/python/code.html)
 - [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics)
 - [Hololens YOLOv4 Object Detection](https://github.com/Interactions-HSG/21-MT-JanickSpirig-HoloLens-ObjectDetection)
+- [python-fitbit](https://github.com/orcasgit/python-fitbit)

@@ -7,6 +7,9 @@
 
 ### v1.1
 - enable support `demo/running_coach_v2.1`
+- add Google's CloudVision
+- add FaceBook's Detic
+- 
 
 ### v1.0
 - enable to detect pointed objects by finger tip
