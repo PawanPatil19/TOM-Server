@@ -54,7 +54,7 @@ def _get_text_detector():
     return _text_detector
 
 
-def get_learning_data(object_of_interest, text_content=None):
+def get_learning_data(object_of_interest, text_content, speech_content):
     global _learning_map
 
     if object_of_interest is None:
@@ -70,7 +70,10 @@ def get_learning_data(object_of_interest, text_content=None):
     if text_content is not None:
         prompt += f"There are some texts, '{text_content}'. "
 
-    prompt += "Briefly describe about it in one sentence. Provide only the answer."
+    if speech_content is not None:
+        prompt += f"{speech_content}. Provide only the answer in one sentence."
+    else:
+        prompt += "Briefly describe about it in one sentence. Provide only the answer."
 
     print(f"Prompt: {prompt}")
 
@@ -109,6 +112,11 @@ def _handle_learning_requests(finger_pointing_data=None):
         print(f'Unsupported data type: {socket_data_type}')
 
 
+def _has_speech_data(finger_pose_data):
+    # FIXME: this is not a good way to send speech data
+    return finger_pose_data.details != ""
+
+
 def _handle_finger_pose(finger_pose_data):
     global _finger_pose_buffer
 
@@ -125,21 +133,23 @@ def _handle_finger_pose(finger_pose_data):
 
         # if same location, identify object data and send it to the client
         if same_pointing_location(prev_avg_camera_x, prev_avg_camera_y, finger_pose_data,
-                                  LearningConfig.finger_pointing_location_offset_percentage):
-            object_of_interest, text_content = _get_detected_object_and_text(finger_pose_data)
-            if object_of_interest is not None or text_content is not None:
-                _send_learning_data(object_of_interest, text_content)
+                                  LearningConfig.finger_pointing_location_offset_percentage) or _has_speech_data(
+            finger_pose_data):
+            object_of_interest, text_content, speech_content = _get_detected_object_and_text_and_speech(
+                finger_pose_data)
+            if object_of_interest is not None or text_content is not None or speech_content is not None:
+                _send_learning_data(object_of_interest, text_content, speech_content)
 
     # temporary store finger pose data
     _finger_pose_buffer.append(finger_pose_data)
 
 
-def _send_learning_data(object_of_interest, text_content):
+def _send_learning_data(object_of_interest, text_content, speech_content):
     global _learning_data_sent_time, _learning_data_has_sent
     _learning_data_sent_time = time_utility.get_current_millis()
     _learning_data_has_sent = True
 
-    learning_content = get_learning_data(object_of_interest, text_content)
+    learning_content = get_learning_data(object_of_interest, text_content, speech_content)
     formatted_content = learning_display.get_formatted_learning_details(learning_content)
     learning_data_handler.send_learning_data(object_of_interest, formatted_content)
 
@@ -178,11 +188,16 @@ def _get_interest_objects_bounding_box(actual_bounding_box, image_width, image_h
     return [x1, y1, x2, y2]
 
 
-def _get_detected_object_and_text(finger_pose_data):
+def _get_detected_object_and_text_and_speech(finger_pose_data):
     global _image_detector, _text_detection_sent_time
 
     if _image_detector is None:
         return None
+
+    # get the speech content
+    speech_content = None
+    if finger_pose_data.details != "":
+        speech_content = finger_pose_data.details
 
     # get the object of interest
     _, frame_width, frame_height, _ = _image_detector.get_source_params()
@@ -190,7 +205,8 @@ def _get_detected_object_and_text(finger_pose_data):
                                                            finger_pose_data.camera_y,
                                                            frame_width, frame_height,
                                                            LearningConfig.finger_pointing_location_offset_percentage)
-    print(f'finger_pointing_region: {finger_pointing_region}')
+
+    print(f'finger_pointing_region: {finger_pointing_region} - {speech_content}')
 
     # get the object of interest
     frame = _image_detector.get_last_frame()
@@ -221,7 +237,7 @@ def _get_detected_object_and_text(finger_pose_data):
     # get the text content
     text_content = _detect_text(frame, interested_text_region)
 
-    return object_of_interest, text_content
+    return object_of_interest, text_content, speech_content
 
 
 # return [x1, y1, x2, y2]
