@@ -13,7 +13,7 @@ class VideoDetection:
             self,
             video_path=0,
             inference=True, # set to False to hide object detection
-            confidence_level=0.65,
+            confidence_level=0.50,
             model="./modules/yolov8/weights/model.pt",
             save=False,
             save_path="yolo_video_output.avi",
@@ -177,7 +177,7 @@ class VideoDetection:
             self.last_frame = frame
 
             #  iou=0.45, max_det=50, verbose=False
-            result = model(frame, agnostic_nms=True, conf=self.confidenceLevel, verbose=False)[0]
+            result = model(frame, agnostic_nms=True, conf=self.confidenceLevel, iou=0.45, verbose=False)[0]
             # [[bounding_boxes, mask, confidence, class_id, tracker_id]
             detections = sv.Detections.from_yolov8(result)
 
