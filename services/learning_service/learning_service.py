@@ -230,9 +230,9 @@ def _get_image_region_from_camera(camera_x, camera_y, image_width, image_height,
     relative_x = camera_x
     relative_y = camera_y
 
-    # if camera_calibration is None:  # FIXME: use camera calibration (instead of hard coded values for HL2)
-    #     relative_x = (relative_x + 0.18) / (0.20 + 0.18)
-    #     relative_y = (relative_y - 0.1) / (-0.12 - 0.1)
+    if camera_calibration is None:  # FIXME: use camera calibration (instead of hard coded values for HL2)
+        relative_x = (relative_x + 0.18) / (0.20 + 0.18)
+        relative_y = (relative_y - 0.1) / (-0.12 - 0.1)
 
     image_x = int(relative_x * image_width)
     image_y = int(relative_y * image_height)
