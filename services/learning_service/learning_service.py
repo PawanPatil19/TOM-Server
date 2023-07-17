@@ -127,7 +127,7 @@ def _handle_finger_pose(finger_pose_data):
         if same_pointing_location(prev_avg_camera_x, prev_avg_camera_y, finger_pose_data,
                                   LearningConfig.finger_pointing_location_offset_percentage):
             object_of_interest, text_content = _get_detected_object_and_text(finger_pose_data)
-            if object_of_interest is not None:
+            if object_of_interest is not None or text_content is not None:
                 _send_learning_data(object_of_interest, text_content)
 
     # temporary store finger pose data
@@ -168,7 +168,7 @@ def _get_interest_objects_bounding_box(actual_bounding_box, image_width, image_h
     # x1 = _get_value(min(int(actual_bounding_box[0]), finger_pointing_region[0]), image_width)
     # y1 = _get_value(min(int(actual_bounding_box[1]), finger_pointing_region[1]), image_height)
     # x2 = _get_value(max(int(actual_bounding_box[2]), finger_pointing_region[2]), image_width)
-    # y2 = _get_value(max(int(actual_bounding_box[1]), finger_pointing_region[1]), image_height)
+    # y2 = _get_value(max(int(actual_bounding_box[3]), finger_pointing_region[3]), image_height)
 
     x1 = _get_value(int(actual_bounding_box[0] + 0.5), image_width)
     y1 = _get_value(int(actual_bounding_box[1] + 0.5), image_height)
@@ -211,8 +211,8 @@ def _get_detected_object_and_text(finger_pose_data):
         object_of_interest_class_id = list(class_labels.keys())[
             list(class_labels.values()).index(object_of_interest)]
         object_of_interest_bounding_box = \
-        [bounding_box for bounding_box, _, _, class_id, _ in detections if
-         class_id == object_of_interest_class_id][0]
+            [bounding_box for bounding_box, _, _, class_id, _ in detections if
+             class_id == object_of_interest_class_id][0]
         interested_text_region = _get_interest_objects_bounding_box(object_of_interest_bounding_box,
                                                                     frame_width, frame_height)
         # print(
