@@ -5,10 +5,13 @@
 
 ## demo/learning
 
+### v1.2
+- 
+
 ### v1.1
 - enable support `demo/running_coach_v2.1`
 - add Google's CloudVision
-- add FaceBook's Detic
+- add FaceBook's Detic (not tested)
 - 
 
 ### v1.0
