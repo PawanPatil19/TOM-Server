@@ -78,7 +78,11 @@ def get_learning_data(object_of_interest, text_content, speech_content):
     print(f"Prompt: {prompt}")
 
     text_generator = _get_text_generator()
-    learning_content = text_generator.generate_response(prompt)
+    learning_content = ""
+    try:
+        learning_content = text_generator.generate_response(prompt)
+    except Exception as e:
+        print(f"OpenAPI error: {e}")
 
     if object_of_interest is not None:
         _learning_map[object_of_interest] = learning_content
@@ -207,6 +211,8 @@ def _get_detected_object_and_text_and_speech(finger_pose_data):
                                                            LearningConfig.finger_pointing_location_offset_percentage)
 
     print(f'finger_pointing_region: {finger_pointing_region} - {speech_content}')
+
+    # FIXME: clean up the code
 
     # get the object of interest
     frame = _image_detector.get_last_frame()

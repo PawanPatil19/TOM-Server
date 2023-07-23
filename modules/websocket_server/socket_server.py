@@ -20,7 +20,7 @@ async def receive_data_from_websocket(websocket):
     try:
         async for rx_data in websocket:
             _rx_queue.put_nowait(rx_data)
-            print(f'Received data: {rx_data}')
+            # print(f'Received data: {rx_data}')
 
     except Exception:
         traceback.print_exc(file=sys.stdout)
@@ -64,10 +64,10 @@ async def send_data_to_websockets(data):
             traceback.print_exc(file=sys.stdout)
             exclude_list.add(_websocket)
 
-    if isinstance(data, str):
-        print(f'Sent data: {data}')
-    else:
-        print(f'Sent data: {len(data)} bytes')
+    # if isinstance(data, str):
+    #     print(f'Sent data: {data}')
+    # else:
+    #     print(f'Sent data: {len(data)} bytes')
 
     _CONNECTIONS -= exclude_list
 
@@ -82,7 +82,7 @@ def receive_data():
     if _rx_queue.empty():
         return None
 
-    print(f'rx_size: {_rx_queue.qsize()}')
+    # print(f'rx_size: {_rx_queue.qsize()}')
 
     return _rx_queue.get_nowait()
 

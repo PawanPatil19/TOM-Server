@@ -87,7 +87,7 @@ def run(hololens_real=False, wearos_real=False, pointing_real=False):
 
     video_src = hololens_portal.API_STREAM_VIDEO if hololens_real else 0
 
-    with YoloDetector(video_src, save=False, inference=True, ) as yoloDetector:
+    with YoloDetector(video_src, save=False, inference=False, ) as yoloDetector:
         start_learning_service_threaded(yoloDetector, pointing_real)
         yoloDetector.start()
 
