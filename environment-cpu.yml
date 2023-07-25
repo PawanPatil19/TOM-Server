@@ -35,3 +35,4 @@ dependencies:
       - openrouteservice==2.3.*
       - geographiclib==2.0.*
       - google-cloud-vision==3.4.*
+      - google-cloud-translate==3.11.*

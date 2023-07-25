@@ -252,9 +252,9 @@ def _get_image_region_from_camera(camera_x, camera_y, image_width, image_height,
     relative_x = camera_x
     relative_y = camera_y
 
-    if camera_calibration is None:  # FIXME: use camera calibration (instead of hard coded values for HL2)
-        relative_x = (relative_x + 0.18) / (0.20 + 0.18)
-        relative_y = (relative_y - 0.1) / (-0.12 - 0.1)
+    # if camera_calibration is None:  # FIXME: use camera calibration (instead of hard coded values for HL2)
+    #     relative_x = (relative_x + 0.18) / (0.20 + 0.18)
+    #     relative_y = (relative_y - 0.1) / (-0.12 - 0.1)
 
     image_x = int(relative_x * image_width)
     image_y = int(relative_y * image_height)
@@ -288,7 +288,10 @@ def _detect_text(frame, text_region):
     try:
         cropped_frame = image_utility.get_cropped_frame(frame, text_region[0], text_region[1],
                                                         text_region[2], text_region[3])
-        text_contents, _, _ = _get_text_detector().detect_text_frame(cropped_frame)
+        image_png_bytes = image_utility.get_png_image_bytes(cropped_frame)
+        image_utility.save_image_bytes('test.png', image_png_bytes)
+
+        text_contents, _, _ = _get_text_detector().detect_text_image_bytes(image_png_bytes)
         print(f'Texts[{len(text_contents)}]: {text_contents}')
 
         _text_detection_sent_time = time_utility.get_current_millis()

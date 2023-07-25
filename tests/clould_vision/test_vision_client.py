@@ -4,6 +4,7 @@ import pytest
 import cv2
 
 from modules.cloud_vision.VisionClient import VisionClient as TextDetector
+import modules.utilities.image_utility as image_utility
 
 
 def test_detect_text_image_uri():
@@ -19,6 +20,6 @@ def test_detect_text_frame():
     ret, frame = cap.read()
 
     text_detector = TextDetector()
-    res, _, _ = text_detector.detect_text_frame(frame)
+    res, _, _ = text_detector.detect_text_image_bytes(image_utility.get_png_image_bytes(frame))
 
     assert res == ""

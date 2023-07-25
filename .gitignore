@@ -3,16 +3,6 @@
 # credential
 credential/*
 
-# fitbit
-fitbit_credential.json
-fitbit_token.json
-# google
-google_credential.json
-# openai
-openai_credential.json
-# ors
-ors_credential.json
-
 # yolo
 **/checkpoints/
 **/*.weights

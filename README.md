@@ -35,7 +35,7 @@ A server for TOM
   - Create a file `credential/google_credential.json` with Google credentials such as `{"map_api_key": "KEY", "vision_api_key": "KEY"}`
   - Create a file `credential/ors_credential.json` with Openrouteservice credentials such as `{"map_api_key": "KEY"}`
   - Create a file `credential/geoapify_credential.json` with Geoapify credentials such as `{"map_api_key": "KEY"}`
-  - Create a file `credential/cloud_vision_credentials.json` with Google Cloud Vision API credentials (follow [authentication](https://github.com/GoogleCloudPlatform/hackathon-toolkit/blob/master/vision/README.md#authentication) to get json key file)
+  - Create a file `credential/google_cloud_credentials.json` with Google Cloud API credentials (follow [authentication](https://github.com/GoogleCloudPlatform/hackathon-toolkit/blob/master/vision/README.md#authentication) to get json key file)
   
 
 

@@ -4,7 +4,9 @@ import pandas as pd
 import os
 import sys
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'credential/cloud_vision_credentials.json'
+import modules.utilities.image_utility as image_utility
+
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'credential/google_cloud_credentials.json'
 
 
 class VisionClient:
@@ -34,13 +36,13 @@ class VisionClient:
 
         return descriptions, scores, vertices
 
-    def detect_text_image_file(self, image_path):
-        with open(image_path, "rb") as image_file:
-            content = image_file.read()
-
-        image = vision.Image(content=content)
+    def detect_text_image_bytes(self, image_bytes):
+        image = vision.Image(content=image_bytes)
 
         return self._detect_text_image(image)
+
+    def detect_text_image_file(self, image_path):
+        return self.detect_text_image_bytes(image_utility.read_image_file_bytes(image_path))
 
     def detect_text_image_uri(self, uri):
         image = vision.Image()
@@ -48,22 +50,11 @@ class VisionClient:
 
         return self._detect_text_image(image)
 
-    def detect_text_frame(self, opencv_frame):
-        _, encoded_image = cv2.imencode('.png', opencv_frame)
-        image_content = encoded_image.tobytes()
-
-        image = vision.Image(content=image_content)
-
-        return self._detect_text_image(image)
-
     # detect text in a image using document text detection
     def detect_dense_text(self, image_path):
         """Detects document features in an image."""
 
-        with open(image_path, 'rb') as image_file:
-            content = image_file.read()
-
-        image = vision.Image(content=content)
+        image = vision.Image(content=image_utility.read_image_file_bytes(image_path))
 
         response = self.client.document_text_detection(image=image)
 
@@ -81,3 +72,82 @@ class VisionClient:
                         ])
                         print('Word text: {} (confidence: {})'.format(
                             word_text, word.confidence))
+
+    # FIXME: extract lower methods, detect_landmarks_image_bytes, detect_landmarks_image_file
+    # detect landmarks in a image
+    def detect_landmarks(self, image_path):
+        """Detects landmarks in the file."""
+
+        image = vision.Image(content=image_utility.read_image_file_bytes(image_path))
+
+        response = self.client.landmark_detection(image=image)
+        landmarks = response.landmark_annotations
+
+        descriptions = []
+        scores = []
+        bounding_boxes = []
+
+        for landmark in landmarks:
+            descriptions.append(landmark.description)
+            scores.append(landmark.score)
+            bounding_boxes.append(landmark.bounding_poly.vertices)
+
+        return descriptions, scores, bounding_boxes
+
+    def detect_objects(self, image_path):
+        """Detects objects in the file."""
+
+        image = vision.Image(content=image_utility.read_image_file_bytes(image_path))
+
+        objects = self.client.object_localization(
+            image=image).localized_object_annotations
+
+        descriptions = []
+        scores = []
+        bounding_boxes = []
+
+        for object_ in objects:
+            descriptions.append(object_.name)
+            scores.append(object_.score)
+            bounding_boxes.append(object_.bounding_poly.vertices)
+
+        return descriptions, scores, bounding_boxes
+
+    def get_multiple_detections(self, image_path):
+        """Detects labels in the file."""
+
+        image = vision.Image(content=image_utility.read_image_file_bytes(image_path))
+
+        features = [
+            vision.Feature.Type.OBJECT_LOCALIZATION,
+            vision.Feature.Type.TEXT_DETECTION,
+            vision.Feature.Type.DOCUMENT_TEXT_DETECTION,
+        ]
+
+        request = {
+            "image": image,
+            "features": [
+                {"type_": vision.Feature.Type.TEXT_DETECTION},
+                {"type_": vision.Feature.Type.OBJECT_LOCALIZATION},
+            ],
+        }
+
+        response = self.client.annotate_image(request)
+
+        print(response)
+
+        descriptions = []
+        scores = []
+        bounding_boxes = []
+
+        for object_localization in response.localized_object_annotations:
+            descriptions.append(object_localization.name)
+            scores.append(object_localization.score)
+            bounding_boxes.append(object_localization.bounding_poly.vertices)
+
+        for text in response.text_annotations:
+            descriptions.append(text.description)
+            scores.append(text.score)
+            bounding_boxes.append(text.bounding_poly.vertices)
+
+        return descriptions, scores, bounding_boxes
