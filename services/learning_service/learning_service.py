@@ -14,7 +14,7 @@ from modules.cloud_vision.VisionClient import VisionClient as TextDetector
 
 class LearningConfig:
     finger_pointing_trigger_duration_seconds = 2
-    finger_pointing_location_offset_percentage = 0.1  # 10% of the screen width/height
+    finger_pointing_location_offset_percentage = 0.2  # 20% of the screen width/height
     finger_detection_duration_seconds = 1  # seconds (depends on the client)
     finger_pointing_buffer_size = math.ceil(
         finger_pointing_trigger_duration_seconds / finger_detection_duration_seconds)
@@ -289,7 +289,7 @@ def _detect_text(frame, text_region):
         cropped_frame = image_utility.get_cropped_frame(frame, text_region[0], text_region[1],
                                                         text_region[2], text_region[3])
         image_png_bytes = image_utility.get_png_image_bytes(cropped_frame)
-        image_utility.save_image_bytes('test.png', image_png_bytes)
+        image_utility.save_image_bytes('temp.png', image_png_bytes)
 
         text_contents, _, _ = _get_text_detector().detect_text_image_bytes(image_png_bytes)
         print(f'Texts[{len(text_contents)}]: {text_contents}')
