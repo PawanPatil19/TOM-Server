@@ -4,7 +4,7 @@ import pandas as pd
 import os
 import sys
 
-import modules.utilities.image_utility as image_utility
+#import modules.utilities.image_utility as image_utility
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'credential/google_cloud_credentials.json'
 
@@ -54,7 +54,11 @@ class VisionClient:
     def detect_dense_text(self, image_path):
         """Detects document features in an image."""
 
-        image = vision.Image(content=image_utility.read_image_file_bytes(image_path))
+        
+        with open(image_path, "rb") as image_file:
+            content = image_file.read()
+
+        image = vision.Image(content=content)
 
         response = self.client.document_text_detection(image=image)
 
@@ -151,3 +155,12 @@ class VisionClient:
             bounding_boxes.append(text.bounding_poly.vertices)
 
         return descriptions, scores, bounding_boxes
+
+
+if __name__ == '__main__':
+    vision_client = VisionClient()
+    # vision_client.detect_dense_text("test_images/IMG_20210814_141230.jpg")
+    # vision_client.detect_landmarks("test_images/IMG_20210814_141230.jpg")
+    # vision_client.detect_objects("test_images/IMG_20210814_141230.jpg")
+    vision_client.detect_dense_text("med1.jpg")
+
